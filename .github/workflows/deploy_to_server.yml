@@ -20,7 +20,7 @@ jobs:
           SOURCE: "./"
           REMOTE_HOST: ${{ secrets.VPS_HOST }}
           REMOTE_USER: ${{ secrets.VPS_USER }}
-          TARGET: "/home/mystrixsoft/public_html"
+          TARGET: "/home/mystrixsoft/erp"
 
       - name: Run Laravel commands on VPS
         uses: appleboy/ssh-action@v1.0.0
