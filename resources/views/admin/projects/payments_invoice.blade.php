@@ -29,7 +29,7 @@
         <div class="header">
             <div class="logo">
                 @if($adminInfo && $adminInfo->business_logo)
-                    <img src="{{ asset('storage/' . $adminInfo->business_logo) }}" alt="Logo" style="max-height: 60px; margin-bottom: 10px;">
+                    <img src="{{ $adminInfo->business_logo }}" alt="Logo" style="max-height: 60px; margin-bottom: 10px;">
                     <div style="font-size: 18px; color: #2c3e50;">{{ $adminInfo->business_name }}</div>
                 @else
                     {{ $adminInfo->business_name ?? 'Construction ERP' }}

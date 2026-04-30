@@ -42,4 +42,25 @@ class Employee extends Model
     {
         return $this->hasMany(ManagerReturn::class);
     }
+
+    public function getPictureAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
+
+    public function getNidFrontendAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
+
+    public function getNidBackendAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
 }

@@ -52,4 +52,11 @@ class Expense extends Model
     {
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
     }
+
+    public function getBillImageAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
 }

@@ -635,7 +635,7 @@ class ProjectWebController extends Controller
             'amount' => $request->amount,
             'expense_date' => $request->expense_date,
             'description' => $request->description,
-            'bill_image' => $imagePath ? url('storage/' . $imagePath) : null,
+            'bill_image' => $imagePath,
         ]);
 
         return back()->with('success', 'Expense recorded successfully.');

@@ -30,7 +30,7 @@
                 <div style="position: relative; display: inline-block; margin-bottom: 30px;">
                     <div style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 4px solid var(--accent-blue); box-shadow: 0 0 25px rgba(0, 123, 255, 0.25); background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                         @if($user->image)
-                            <img src="{{ asset('storage/' . $user->image) }}" id="preview-img" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ $user->image }}" id="preview-img" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
                         @else
                             <i class="fas fa-user-shield" id="preview-icon" style="font-size: 90px; color: var(--accent-blue); opacity: 0.8;"></i>
                         @endif
@@ -102,7 +102,7 @@
                                 <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px dashed var(--border-color);">
                                     <div style="width: 50px; height: 50px; border-radius: 6px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border-color);">
                                         @if($user->business_logo)
-                                            <img src="{{ asset('storage/' . $user->business_logo) }}" id="logo-preview-img" style="width: 100%; height: 100%; object-fit: contain;">
+                                            <img src="{{ $user->business_logo }}" id="logo-preview-img" style="width: 100%; height: 100%; object-fit: contain;">
                                         @else
                                             <i class="fas fa-image" id="logo-preview-icon" style="font-size: 18px; color: var(--text-secondary);"></i>
                                         @endif

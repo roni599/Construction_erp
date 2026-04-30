@@ -1,7 +1,7 @@
 @php 
     $globalAdmin = \App\Models\User::where('role', 'admin')->first();
     $displayBusinessName = ($globalAdmin && $globalAdmin->business_name) ? $globalAdmin->business_name : 'Construction ERP';
-    $displayBusinessLogo = ($globalAdmin && $globalAdmin->business_logo) ? asset('storage/' . $globalAdmin->business_logo) : null;
+    $displayBusinessLogo = ($globalAdmin && $globalAdmin->business_logo) ? $globalAdmin->business_logo : null;
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -301,7 +301,7 @@
                 <div style="position: relative;" id="profile-dropdown-container">
                     <div id="profile-trigger" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--accent-yellow); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         @if(Auth::user()->image)
-                            <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ Auth::user()->image }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
                         @else
                             <i class="fas fa-user-tie" style="font-size: 18px; color: var(--accent-yellow);"></i>
                         @endif

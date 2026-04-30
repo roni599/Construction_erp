@@ -45,9 +45,9 @@ class EmployeeWebController extends Controller
                 'phone' => $request->phone,
                 'address' => $request->address,
                 'join_date' => $request->join_date,
-                'picture' => $picture ? asset("storage/$picture") : null,
-                'nid_frontend' => $nidFront ? asset("storage/$nidFront") : null,
-                'nid_backend' => $nidBack ? asset("storage/$nidBack") : null,
+                'picture' => $picture,
+                'nid_frontend' => $nidFront,
+                'nid_backend' => $nidBack,
                 'is_active' => true,
             ]);
 
@@ -123,16 +123,13 @@ class EmployeeWebController extends Controller
             $nidBackPath = $employee->nid_backend;
 
             if ($request->hasFile('picture')) {
-                $path = $request->file('picture')->store('employees', 'public');
-                $picturePath = url('storage/' . $path);
+                $picturePath = $request->file('picture')->store('employees', 'public');
             }
             if ($request->hasFile('nid_frontend')) {
-                $path = $request->file('nid_frontend')->store('employees/nid', 'public');
-                $nidFrontPath = url('storage/' . $path);
+                $nidFrontPath = $request->file('nid_frontend')->store('employees/nid', 'public');
             }
             if ($request->hasFile('nid_backend')) {
-                $path = $request->file('nid_backend')->store('employees/nid', 'public');
-                $nidBackPath = url('storage/' . $path);
+                $nidBackPath = $request->file('nid_backend')->store('employees/nid', 'public');
             }
 
             DB::beginTransaction();

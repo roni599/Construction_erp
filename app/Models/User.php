@@ -63,4 +63,18 @@ class User extends Authenticatable
         }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=FFD700&color=000';
     }
+
+    public function getImageAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
+
+    public function getBusinessLogoAttribute($value)
+    {
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return asset('storage/' . $value);
+    }
 }
