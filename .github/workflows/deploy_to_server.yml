@@ -1,0 +1,53 @@
+name: Deploy Laravel to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy files to VPS
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete --exclude='/node_modules/' --exclude='/.git/' --exclude='/storage/' --exclude='/bootstrap/cache/' --exclude='/vendor/' --exclude='/.env' --exclude='/public/storage/' --exclude='/public/build/' --exclude='/public/hot/' --exclude='/.idea/' --exclude='/.vscode/'"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.VPS_HOST }}
+          REMOTE_USER: ${{ secrets.VPS_USER }}
+          TARGET: "/home/mystrixsoft/public_html"
+
+      - name: Run Laravel commands on VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/mystrixsoft/erp
+
+            # Install dependencies
+            composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+            #link
+            php artisan storage:link
+
+            # ONLY run migrate if needed
+            php artisan migrate --force || true
+
+            # Clear first
+            php artisan optimize:clear
+
+            # Cache properly
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Permissions
+            chmod -R 775 storage bootstrap/cache
+            chmod -R 755 public
