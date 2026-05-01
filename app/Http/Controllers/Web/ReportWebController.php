@@ -11,6 +11,13 @@ use Illuminate\Http\Request;
 
 class ReportWebController extends Controller
 {
+    protected $financialService;
+    
+    public function __construct(\App\Services\ProjectFinancialService $financialService)
+    {
+        $this->financialService = $financialService;
+    }
+
     public function index()
     {
         $projects = Project::all();
@@ -187,7 +194,7 @@ class ReportWebController extends Controller
                     'date' => $item->expense_date,
                     'type' => 'Expense',
                     'method' => 'Cash', // Default for project expenses
-                    'category' => $item->category->name,
+                    'category' => $item->category->name ?? 'N/A',
                     'description' => $item->description ?? 'Project Expense',
                     'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
                     'invoice_url' => route('shared.expenses.invoice', $item->id),
@@ -199,7 +206,7 @@ class ReportWebController extends Controller
             $transactions = $transactions->concat($expenses);
         }
 
-        // 4. Fund Returns
+        // 4. Fund Returned
         if ($type === 'all' || $type === 'fund_return') {
             $query = \App\Models\ManagerReturn::where('project_id', $projectId);
             if ($from) $query->where('return_date', '>=', $from);
@@ -228,11 +235,11 @@ class ReportWebController extends Controller
         }
 
         $report_data = $transactions->sortBy('date')->values();
-        $projects = Project::all();
         $selected_project = $project;
         $filters = $request->all();
+        $projects = Project::all();
 
-        return view('admin.reports.index', compact('projects', 'selected_project', 'report_data', 'filters'));
+        return view('admin.reports.index', compact('projects', 'report_data', 'selected_project', 'filters'));
     }
 
     public function managerIndex(Request $request)
@@ -324,6 +331,8 @@ class ReportWebController extends Controller
                     'invoice_url' => route('shared.payments.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
+                    'project_id' => $item->project_id,
+                    'project_name' => $item->project->project_name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($payments);
@@ -351,6 +360,8 @@ class ReportWebController extends Controller
                     'invoice_url' => route('shared.funds.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
+                    'project_id' => $item->project_id,
+                    'project_name' => $item->project->project_name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($funds);
@@ -378,6 +389,8 @@ class ReportWebController extends Controller
                     'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
+                    'project_id' => $item->project_id,
+                    'project_name' => $item->project->project_name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($expenses);
@@ -405,6 +418,8 @@ class ReportWebController extends Controller
                     'invoice_url' => route('shared.returns.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
+                    'project_id' => $item->project_id,
+                    'project_name' => $item->project->project_name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($returns);

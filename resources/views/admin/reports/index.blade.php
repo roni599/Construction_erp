@@ -218,7 +218,6 @@
     @endif
 
     @if(isset($report_data))
-    @if(isset($report_data))
     <script>
         function exportToExcel() {
             const downloadDate = new Date().toLocaleDateString();
@@ -417,6 +416,5 @@
             window.open(url, '_blank');
         }
     </script>
-    @endif
     @endif
 @endsection
