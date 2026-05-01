@@ -53,30 +53,32 @@
                         @if($item['type'] == 'Fund Disbursed')
                             @php $runningBalance += $item['debit']; @endphp {{-- From company debit to manager credit --}}
                             <tr>
-                                <td>{{ $item['date'] }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item['date'])->format('d M, Y') }}</td>
                                 <td style="font-family: monospace;">
                                     <a href="{{ route('shared.funds.invoice', $item['original_id']) }}" target="_blank" style="color: var(--accent-yellow); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                                         {{ $item['id'] }}
                                     </a>
                                 </td>
-                                <td><span class="badge badge-pending">Funds Received</span></td>
-                                <td>{{ $item['description'] }}</td>
-                                <td style="color: var(--success);">Tk. {{ number_format($item['debit'], 2) }}</td>
+                                <td><span class="badge" style="background: rgba(0, 230, 118, 0.1); color: var(--success);">Credit</span></td>
+                                <td style="font-size: 13px;">{{ $item['description'] }}</td>
+                                <td style="text-align: right; color: var(--success); font-weight: 600;">Tk. {{ number_format($item['debit'], 2) }}</td>
                                 <td>-</td>
                             </tr>
                         @elseif(str_contains($item['type'], 'Expense'))
                             @php $runningBalance -= $item['debit']; @endphp
                             <tr>
-                                <td>{{ $item['date'] }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item['date'])->format('d M, Y') }}</td>
                                 <td style="font-family: monospace;">
                                     <a href="{{ route('shared.expenses.invoice', $item['original_id']) }}" target="_blank" style="color: var(--accent-yellow); text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                                         {{ $item['id'] }}
                                     </a>
                                 </td>
-                                <td><span class="badge badge-hold">Expense</span></td>
-                                <td>{{ $item['description'] }}</td>
+                                <td><span class="badge" style="background: rgba(255, 76, 76, 0.1); color: var(--danger);">Expense</span></td>
+                                <td style="font-size: 13px;">
+                                    {{ $item['description'] }}
+                                </td>
                                 <td>-</td>
-                                <td style="color: var(--danger);">Tk. {{ number_format($item['debit'], 2) }}</td>
+                                <td style="text-align: right; color: var(--danger); font-weight: 600;">Tk. {{ number_format($item['debit'], 2) }}</td>
                             </tr>
                         @elseif($item['type'] == 'Fund Returned by PM')
                             @php $runningBalance -= $item['credit']; @endphp {{-- Money out of manager hand --}}

@@ -109,8 +109,8 @@ class ProjectFinancialService
                     'original_id' => $item->id,
                     'id' => $item->invoice_no ?? 'EXP-'.$item->id,
                     'date' => $item->expense_date->format('Y-m-d'),
-                    'type' => 'Expense (' . $item->category->name . ')',
-                    'description' => $item->description ?? 'Project Expense',
+                    'type' => 'Expense',
+                    'description' => $item->description ? $item->description . ' (' . ($item->category->name ?? 'General') . ')' : 'Payment for ' . ($item->category->name ?? 'Expense'),
                     'credit' => 0,
                     'debit' => $item->amount, // Money leaving project funds
                 ];
