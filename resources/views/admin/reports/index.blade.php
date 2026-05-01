@@ -102,10 +102,11 @@
                                 $type = $filters['report_type'] ?? 'all';
                                 $showIn = in_array($type, ['all', 'client_received', 'fund_return']);
                                 $showOut = in_array($type, ['all', 'fund_pm', 'expense']);
-                                $colCount = 5 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
+                                $colCount = 6 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
                             @endphp
                             <tr>
                                 <th>Date</th>
+                                <th>Invoice</th>
                                 <th>Type</th>
                                 <th>Method</th>
                                 <th>Category</th>
@@ -126,6 +127,11 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $item['date']->format('Y-m-d') }}</td>
+                                    <td>
+                                        <a href="{{ $item['invoice_url'] }}" target="_blank" style="color: var(--accent-yellow); text-decoration: none; font-weight: 600;">
+                                            {{ $item['invoice_no'] }}
+                                        </a>
+                                    </td>
                                     <td>
                                         <span class="badge" style="background: {{ $item['credit'] > 0 ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 82, 82, 0.1)' }}; color: {{ $item['credit'] > 0 ? 'var(--success)' : 'var(--danger)' }};">
                                             {{ $item['type'] }}
@@ -163,37 +169,37 @@
                             @endphp
                             <tfoot style="background: rgba(255,255,255,0.05);">
                                 <tr>
-                                    <th colspan="5" style="text-align: right;">Total Received from Client:</th>
+                                    <th colspan="6" style="text-align: right;">Total Received from Client:</th>
                                     <th colspan="2" style="text-align: right; color: var(--success); font-size: 1.1em; padding-right: 12px;">
                                         Tk. {{ number_format($totalClientReceived, 2) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="5" style="text-align: right;">Total Transferred to PM:</th>
+                                    <th colspan="6" style="text-align: right;">Total Transferred to PM:</th>
                                     <th colspan="2" style="text-align: right; color: var(--accent-blue); font-size: 1.1em; padding-right: 12px;">
                                         Tk. {{ number_format($totalTransferredToPM, 2) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="5" style="text-align: right;">Total PM Expenses:</th>
+                                    <th colspan="6" style="text-align: right;">Total PM Expenses:</th>
                                     <th colspan="2" style="text-align: right; color: var(--danger); font-size: 1.1em; padding-right: 12px;">
                                         Tk. {{ number_format($totalPMExpenses, 2) }}
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th colspan="5" style="text-align: right;">Total Fund Returned by PM:</th>
+                                    <th colspan="6" style="text-align: right;">Total Fund Returned by PM:</th>
                                     <th colspan="2" style="text-align: right; color: var(--accent-yellow); font-size: 1.1em; padding-right: 12px;">
                                         Tk. {{ number_format($totalFundReturned, 2) }}
                                     </th>
                                 </tr>
                                 <tr style="border-top: 2px solid var(--border-color);">
-                                    <th colspan="5" style="text-align: right; font-weight: bold;">Office Balance (Received - Transferred):</th>
+                                    <th colspan="6" style="text-align: right; font-weight: bold;">Office Balance (Received - Transferred):</th>
                                     <th colspan="2" style="text-align: right; color: {{ $officeBalance >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-weight: bold; font-size: 1.2em; padding-right: 12px;">
                                         Tk. {{ number_format($officeBalance, 2) }}
                                     </th>
                                 </tr>
                                 <tr style="border-top: 1px dashed var(--border-color);">
-                                    <th colspan="5" style="text-align: right;">PM Hand Cash (Transferred - Expenses):</th>
+                                    <th colspan="6" style="text-align: right;">PM Hand Cash (Transferred - Expenses):</th>
                                     <th colspan="2" style="text-align: right; color: {{ $pmHandCash >= 0 ? 'var(--accent-blue)' : 'var(--danger)' }}; font-size: 1.1em; padding-right: 12px;">
                                         Tk. {{ number_format($pmHandCash, 2) }}
                                     </th>
@@ -357,6 +363,7 @@
 
             const tableHeaders = [
                 { content: 'Date', styles: { halign: 'center' } },
+                { content: 'Invoice', styles: { halign: 'center' } },
                 { content: 'Type', styles: { halign: 'center' } },
                 { content: 'Method', styles: { halign: 'center' } },
                 { content: 'Category', styles: { halign: 'center' } },
@@ -366,16 +373,23 @@
             if(showOut) tableHeaders.push({ content: 'Spent (Out)', styles: { halign: 'right' } });
 
             const foot = [
-                [{ content: 'Total Received from Client:', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalClientReceived ?? 0, 2) }}', colSpan: colCount - 5, styles: { halign: 'right', fontStyle: 'bold' } }],
-                [{ content: 'Total Transferred to PM:', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalTransferredToPM ?? 0, 2) }}', colSpan: colCount - 5, styles: { halign: 'right', fontStyle: 'bold' } }],
-                [{ content: 'Total Fund Returned by PM:', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalFundReturned ?? 0, 2) }}', colSpan: colCount - 5, styles: { halign: 'right', fontStyle: 'bold' } }],
-                [{ content: 'Office Balance (Received - Transferred):', colSpan: 5, styles: { halign: 'right', fontStyle: 'bold' } }, { content: 'Tk. {{ number_format($officeBalance ?? 0, 2) }}', colSpan: colCount - 5, styles: { halign: 'right', fontStyle: 'bold' } }],
-                [{ content: 'PM Hand Cash (Transferred - Expenses):', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($pmHandCash ?? 0, 2) }}', colSpan: colCount - 5, styles: { halign: 'right', fontStyle: 'bold' } }]
+                [{ content: 'Total Received from Client:', colSpan: 6, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalClientReceived ?? 0, 2) }}', colSpan: colCount - 6, styles: { halign: 'right', fontStyle: 'bold' } }],
+                [{ content: 'Total Transferred to PM:', colSpan: 6, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalTransferredToPM ?? 0, 2) }}', colSpan: colCount - 6, styles: { halign: 'right', fontStyle: 'bold' } }],
+                [{ content: 'Total Fund Returned by PM:', colSpan: 6, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalFundReturned ?? 0, 2) }}', colSpan: colCount - 6, styles: { halign: 'right', fontStyle: 'bold' } }],
+                [{ content: 'Office Balance (Received - Transferred):', colSpan: 6, styles: { halign: 'right', fontStyle: 'bold' } }, { content: 'Tk. {{ number_format($officeBalance ?? 0, 2) }}', colSpan: colCount - 6, styles: { halign: 'right', fontStyle: 'bold' } }],
+                [{ content: 'PM Hand Cash (Transferred - Expenses):', colSpan: 6, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($pmHandCash ?? 0, 2) }}', colSpan: colCount - 6, styles: { halign: 'right', fontStyle: 'bold' } }]
             ];
 
             const columnStyles = {};
-            if (showIn && showOut) { columnStyles[5] = { halign: 'right' }; columnStyles[6] = { halign: 'right' }; }
-            else if (showIn || showOut) { columnStyles[5] = { halign: 'right' }; }
+            // Updated indices based on added Invoice column:
+            // 0:Date, 1:Invoice, 2:Type, 3:Method, 4:Category, 5:Description, 6:Received, 7:Spent
+            if (showIn && showOut) { 
+                columnStyles[6] = { halign: 'right' }; 
+                columnStyles[7] = { halign: 'right' }; 
+            }
+            else if (showIn || showOut) { 
+                columnStyles[6] = { halign: 'right' }; 
+            }
 
             doc.autoTable({
                 head: [tableHeaders],

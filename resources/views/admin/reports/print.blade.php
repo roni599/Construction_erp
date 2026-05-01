@@ -44,9 +44,10 @@
             $showOut = in_array($type, ['all', 'fund_pm', 'expense']);
         }
 
-        $colCount = 5 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
+        $colCount = 6 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
     @endphp
 
+    @php
         $typeLabels = [
             'all' => 'Financial Report',
             'fund_pm' => 'Funds Received Report',
@@ -81,7 +82,8 @@
     <table class="report-table" style="margin-top: 0;">
         <thead>
             <tr>
-                <th style="width: 12%;">Date</th>
+                <th style="width: 10%;">Date</th>
+                <th style="width: 10%;">Invoice</th>
                 <th style="width: 15%;">Type</th>
                 <th style="width: 12%;">Method</th>
                 <th style="width: 15%;">Category</th>
@@ -94,6 +96,11 @@
             @foreach($report_data as $item)
                 <tr>
                     <td>{{ $item['date']->format('Y-m-d') }}</td>
+                    <td>
+                        <a href="{{ $item['invoice_url'] }}" target="_blank" style="color: #000; text-decoration: none; font-weight: 600;">
+                            {{ $item['invoice_no'] }}
+                        </a>
+                    </td>
                     <td>{{ $item['type'] }}</td>
                     <td style="text-transform: capitalize;">{{ str_replace('_', ' ', $item['method']) }}</td>
                     <td>{{ $item['category'] }}</td>
@@ -106,24 +113,24 @@
         <tfoot>
             @if(!$isManager)
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">Total Received from Client:</td>
-                <td colspan="{{ $colCount - 5 }}" class="footer-value">Tk. {{ number_format($totals['client_received'], 2) }}</td>
+                <td colspan="6" class="footer-label">Total Received from Client:</td>
+                <td colspan="{{ $colCount - 6 }}" class="footer-value">Tk. {{ number_format($totals['client_received'], 2) }}</td>
             </tr>
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">Total Transferred to PM:</td>
-                <td colspan="{{ $colCount - 5 }}" class="footer-value">Tk. {{ number_format($totals['transferred_pm'], 2) }}</td>
+                <td colspan="6" class="footer-label">Total Transferred to PM:</td>
+                <td colspan="{{ $colCount - 6 }}" class="footer-value">Tk. {{ number_format($totals['transferred_pm'], 2) }}</td>
             </tr>
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">Total PM Expenses:</td>
-                <td colspan="{{ $colCount - 5 }}" class="footer-value">Tk. {{ number_format($totals['pm_expenses'] ?? 0, 2) }}</td>
+                <td colspan="6" class="footer-label">Total PM Expenses:</td>
+                <td colspan="{{ $colCount - 6 }}" class="footer-value">Tk. {{ number_format($totals['pm_expenses'] ?? 0, 2) }}</td>
             </tr>
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">Office Balance (Received - Transferred):</td>
-                <td colspan="{{ $colCount - 5 }}" class="footer-value">Tk. {{ number_format($totals['office_balance'], 2) }}</td>
+                <td colspan="6" class="footer-label">Office Balance (Received - Transferred):</td>
+                <td colspan="{{ $colCount - 6 }}" class="footer-value">Tk. {{ number_format($totals['office_balance'], 2) }}</td>
             </tr>
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">PM Hand Cash (Transferred - Expenses):</td>
-                <td colspan="{{ $colCount - 5 }}" class="footer-value">Tk. {{ number_format($totals['pm_hand_cash'], 2) }}</td>
+                <td colspan="6" class="footer-label">PM Hand Cash (Transferred - Expenses):</td>
+                <td colspan="{{ $colCount - 6 }}" class="footer-value">Tk. {{ number_format($totals['pm_hand_cash'], 2) }}</td>
             </tr>
             @else
             @php
@@ -131,7 +138,7 @@
                 $totalOut = $report_data->sum('debit');
             @endphp
             <tr class="footer-row">
-                <td colspan="5" class="footer-label">Total:</td>
+                <td colspan="6" class="footer-label">Total:</td>
                 @if($showIn) <td class="footer-value">Tk. {{ number_format($totalIn, 2) }}</td> @endif
                 @if($showOut) <td class="footer-value">Tk. {{ number_format($totalOut, 2) }}</td> @endif
             </tr>

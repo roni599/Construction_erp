@@ -98,10 +98,11 @@
                                 // For managers: Fund Received (from Admin) is IN, while Expense and Fund Return (to Admin) are OUT.
                                 $showIn = in_array($type, ['all', 'fund_pm']);
                                 $showOut = in_array($type, ['all', 'expense', 'fund_return']);
-                                $colCount = 5 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
+                                $colCount = 6 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
                             @endphp
                             <tr>
                                 <th>Date</th>
+                                <th>Invoice</th>
                                 <th>Type</th>
                                 <th>Method</th>
                                 <th>Category</th>
@@ -122,6 +123,11 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $item['date']->format('Y-m-d') }}</td>
+                                    <td>
+                                        <a href="{{ $item['invoice_url'] }}" target="_blank" style="color: var(--accent-yellow); text-decoration: none; font-weight: 600;">
+                                            {{ $item['invoice_no'] }}
+                                        </a>
+                                    </td>
                                     <td>
                                         <span class="badge" style="background: {{ $item['credit'] > 0 ? 'rgba(0, 230, 118, 0.1)' : 'rgba(255, 82, 82, 0.1)' }}; color: {{ $item['credit'] > 0 ? 'var(--success)' : 'var(--danger)' }};">
                                             {{ $item['type'] }}
@@ -150,7 +156,7 @@
                         @if($report_data->count() > 0)
                             <tfoot style="background: rgba(255,255,255,0.05);">
                                 <tr>
-                                    <th colspan="5" style="text-align: right;">Total:</th>
+                                    <th colspan="6" style="text-align: right;">Total:</th>
                                     @if($showIn) <th style="text-align: right; color: var(--success);">Tk. {{ number_format($totalIn, 2) }}</th> @endif
                                     @if($showOut) <th style="text-align: right; color: var(--danger);">Tk. {{ number_format($totalOut, 2) }}</th> @endif
                                 </tr>
@@ -320,6 +326,7 @@
 
             const tableHeaders = [
                 { content: 'Date', styles: { halign: 'center' } },
+                { content: 'Invoice', styles: { halign: 'center' } },
                 { content: 'Type', styles: { halign: 'center' } },
                 { content: 'Method', styles: { halign: 'center' } },
                 { content: 'Category', styles: { halign: 'center' } },
@@ -332,7 +339,7 @@
 
             // 4. Construct Footer
             const foot = [];
-            const footTotal = [{ content: 'Total:', colSpan: 5, styles: { halign: 'right' } }];
+            const footTotal = [{ content: 'Total:', colSpan: 6, styles: { halign: 'right' } }];
             if(showIn) footTotal.push({ content: 'Tk. ' + totalIn, styles: { halign: 'right' } });
             if(showOut) footTotal.push({ content: 'Tk. ' + totalOut, styles: { halign: 'right' } });
             foot.push(footTotal);
@@ -341,10 +348,10 @@
             // 5. Generate the table
             const columnStyles = {};
             if (showIn && showOut) {
-                columnStyles[5] = { halign: 'right' };
                 columnStyles[6] = { halign: 'right' };
+                columnStyles[7] = { halign: 'right' };
             } else if (showIn || showOut) {
-                columnStyles[5] = { halign: 'right' };
+                columnStyles[6] = { halign: 'right' };
             }
 
             doc.autoTable({

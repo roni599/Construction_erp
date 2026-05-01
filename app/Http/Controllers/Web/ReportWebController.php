@@ -101,7 +101,9 @@ class ReportWebController extends Controller
                     'type' => 'Client Payment',
                     'method' => $item->payment_method,
                     'category' => '-',
-                    'description' => $item->reference_no ? 'Ref: '.$item->reference_no : 'Client Payment',
+                    'description' => $item->description ?? 'Client Payment',
+                    'invoice_no' => $item->invoice_no ?? 'PAY-'.$item->id,
+                    'invoice_url' => route('shared.payments.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
                     'raw_date' => $item->payment_date->format('Y-m-d')
@@ -122,6 +124,8 @@ class ReportWebController extends Controller
                     'method' => $item->payment_method,
                     'category' => '-',
                     'description' => $item->note ?? 'Fund Disbursed to Manager',
+                    'invoice_no' => $item->invoice_no ?? 'FND-'.$item->id,
+                    'invoice_url' => route('shared.funds.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                     'raw_date' => $item->fund_date->format('Y-m-d')
@@ -142,6 +146,8 @@ class ReportWebController extends Controller
                     'method' => 'Cash', // Default for project expenses
                     'category' => $item->category->name,
                     'description' => $item->description ?? 'Project Expense',
+                    'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
+                    'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                     'raw_date' => $item->expense_date->format('Y-m-d')
@@ -162,6 +168,8 @@ class ReportWebController extends Controller
                     'method' => $item->payment_method,
                     'category' => '-',
                     'description' => $item->note ?? 'Fund Returned to Admin',
+                    'invoice_no' => $item->invoice_no ?? 'RET-'.$item->id,
+                    'invoice_url' => route('shared.returns.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
                     'raw_date' => $item->return_date->format('Y-m-d')
@@ -255,7 +263,9 @@ class ReportWebController extends Controller
                     'type' => 'Client Payment',
                     'method' => $item->payment_method,
                     'category' => '-',
-                    'description' => $item->invoice_no ? 'Inv: '.$item->invoice_no : 'Client Payment',
+                    'description' => $item->description ?? 'Client Payment',
+                    'invoice_no' => $item->invoice_no ?? 'PAY-'.$item->id,
+                    'invoice_url' => route('shared.payments.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
                 ];
@@ -274,7 +284,9 @@ class ReportWebController extends Controller
                     'type' => 'Fund Disbursed',
                     'method' => $item->payment_method,
                     'category' => '-',
-                    'description' => $item->invoice_no ? 'Inv: '.$item->invoice_no : 'Fund Disbursed to Manager',
+                    'description' => $item->note ?? 'Fund Disbursed to Manager',
+                    'invoice_no' => $item->invoice_no ?? 'FND-'.$item->id,
+                    'invoice_url' => route('shared.funds.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                 ];
@@ -294,6 +306,8 @@ class ReportWebController extends Controller
                     'method' => 'Cash',
                     'category' => $item->category->name ?? 'N/A',
                     'description' => $item->description ?? 'Project Expense',
+                    'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
+                    'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                 ];
@@ -312,7 +326,9 @@ class ReportWebController extends Controller
                     'type' => 'Fund Returned',
                     'method' => $item->payment_method,
                     'category' => '-',
-                    'description' => $item->invoice_no ? 'Inv: '.$item->invoice_no : 'Fund Returned to Admin',
+                    'description' => $item->note ?? 'Fund Returned to Admin',
+                    'invoice_no' => $item->invoice_no ?? 'RET-'.$item->id,
+                    'invoice_url' => route('shared.returns.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
                 ];
@@ -350,6 +366,8 @@ class ReportWebController extends Controller
                     'method' => $item->payment_method,
                     'category' => '-',
                     'description' => $item->note ?? 'Fund Received from Admin',
+                    'invoice_no' => $item->invoice_no ?? 'FND-'.$item->id,
+                    'invoice_url' => route('shared.funds.invoice', $item->id),
                     'credit' => $item->amount,
                     'debit' => 0,
                 ];
@@ -368,6 +386,8 @@ class ReportWebController extends Controller
                     'method' => 'Cash',
                     'category' => $item->category->name,
                     'description' => $item->description ?? 'Project Expense',
+                    'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
+                    'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                 ];
@@ -386,6 +406,8 @@ class ReportWebController extends Controller
                     'method' => $item->payment_method,
                     'category' => '-',
                     'description' => $item->note ?? 'Fund Returned to Admin',
+                    'invoice_no' => $item->invoice_no ?? 'RET-'.$item->id,
+                    'invoice_url' => route('shared.returns.invoice', $item->id),
                     'credit' => 0,
                     'debit' => $item->amount,
                 ];
