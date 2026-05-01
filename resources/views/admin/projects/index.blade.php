@@ -10,16 +10,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div style="background: rgba(255, 76, 76, 0.2); color: var(--danger); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <!-- Create Project Modal -->
     <div id="createProjectModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: flex-start; justify-content: flex-start; z-index: 2000;">
@@ -162,6 +152,12 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->clientPayments()->sum('amount'), 2, '.', '') }})">
+                                        <i class="fas fa-money-bill-wave"></i> Client Payment
+                                    </a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openFundModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', '{{ addslashes($project->manager->name ?? 'Unassigned') }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->managerFunds()->sum('amount'), 2, '.', '') }})">
+                                        <i class="fas fa-hand-holding-usd"></i> Disburse Fund
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('admin.projects.show', $project->id) }}">
                                         <i class="fas fa-tasks"></i> Manage
                                     </a>
@@ -192,6 +188,95 @@
         {{ $projects->appends(request()->query())->links() }}
     </div>
 
+    <!-- Record Client Payment Modal -->
+    <div id="paymentFormModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+            <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="togglePaymentModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="margin-bottom: 24px;">
+                <h3 style="margin: 0;">Record Client Payment</h3>
+                <p id="payment-project-name" style="margin: 4px 0 0; color: var(--accent-yellow); font-weight: 500;"></p>
+            </div>
+            
+            <form method="POST" action="{{ route('admin.projects.payments.storeGlobal') }}" onsubmit="return validatePaymentAmount()">
+                @csrf
+                <input type="hidden" name="project_id" id="payment_project_id">
+                
+                <div class="form-group">
+                    <label class="form-label">Estimated Budget</label>
+                    <input type="text" id="payment_display_budget" class="form-control" readonly style="background: rgba(255,255,255,0.05); color: var(--accent-yellow);">
+                    <input type="hidden" id="payment_hidden_budget" value="0">
+                    <input type="hidden" id="payment_hidden_received" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount (Tk.)</label>
+                    <input type="number" step="any" name="amount" id="payment_amount" class="form-control" required onwheel="this.blur()" autocomplete="off">
+                    <small id="payment_amount_error" style="color: var(--danger); display: none; margin-top: 4px;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Date</label>
+                    <input type="date" name="payment_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Method</label>
+                    <select name="payment_method" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="cash">Cash</option>
+                        <option value="mobile_banking">Mobile Banking</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Save Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Disburse Fund Modal -->
+    <div id="fundFormModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+            <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleFundModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="margin-bottom: 24px;">
+                <h3 style="margin: 0;">Disburse Fund to Manager</h3>
+                <p id="fund-project-name" style="margin: 4px 0 0; color: var(--accent-blue); font-weight: 500;"></p>
+                <p id="fund-manager-name" style="margin: 2px 0 0; font-size: 13px; color: var(--text-secondary);"></p>
+            </div>
+            
+            <form method="POST" action="{{ route('admin.projects.funds.storeGlobal') }}" onsubmit="return validateFundAmount()">
+                @csrf
+                <input type="hidden" name="project_id" id="fund_project_id">
+                
+                <div class="form-group">
+                    <label class="form-label">Project Budget</label>
+                    <input type="text" id="fund_display_budget" class="form-control" readonly style="background: rgba(255,255,255,0.05); color: var(--accent-blue);">
+                    <input type="hidden" id="fund_hidden_budget" value="0">
+                    <input type="hidden" id="fund_hidden_disbursed" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount (Tk.)</label>
+                    <input type="number" step="any" name="amount" id="fund_amount" class="form-control" required onwheel="this.blur()" autocomplete="off">
+                    <small id="fund_amount_error" style="color: var(--danger); display: none; margin-top: 4px;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fund Date</label>
+                    <input type="date" name="fund_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Method</label>
+                    <select name="payment_method" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="cash">Cash</option>
+                        <option value="mobile_banking">Mobile Banking</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Disburse Fund</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         function toggleForm() {
             const modal = document.getElementById('createProjectModal');
@@ -202,6 +287,85 @@
                 modal.classList.remove('active');
                 setTimeout(() => modal.style.display = 'none', 300);
             }
+        }
+
+        function togglePaymentModal() {
+            const modal = document.getElementById('paymentFormModal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            } else {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        function openPaymentModal(id, name, budget, totalReceived) {
+            if (typeof closeAllDropdowns === 'function') closeAllDropdowns();
+            document.getElementById('payment_project_id').value = id;
+            document.getElementById('payment-project-name').textContent = 'Project: ' + name;
+            document.getElementById('payment_display_budget').value = 'Tk. ' + new Intl.NumberFormat().format(budget);
+            document.getElementById('payment_hidden_budget').value = budget;
+            document.getElementById('payment_hidden_received').value = totalReceived;
+            document.getElementById('payment_amount').value = '';
+            document.getElementById('payment_amount_error').style.display = 'none';
+            togglePaymentModal();
+        }
+
+        function validatePaymentAmount() {
+            const budget = parseFloat(document.getElementById('payment_hidden_budget').value) || 0;
+            const received = parseFloat(document.getElementById('payment_hidden_received').value) || 0;
+            const amount = parseFloat(document.getElementById('payment_amount').value) || 0;
+            const errorElement = document.getElementById('payment_amount_error');
+
+            const remaining = Math.round((budget - received) * 100) / 100;
+
+            if (budget > 0 && amount > (remaining + 0.001)) {
+                errorElement.textContent = "Amount exceeds remaining budget (Remaining: Tk. " + new Intl.NumberFormat().format(remaining) + ")";
+                errorElement.style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        function toggleFundModal() {
+            const modal = document.getElementById('fundFormModal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            } else {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        function openFundModal(id, name, manager, budget, totalDisbursed) {
+            if (typeof closeAllDropdowns === 'function') closeAllDropdowns();
+            document.getElementById('fund_project_id').value = id;
+            document.getElementById('fund-project-name').textContent = 'Project: ' + name;
+            document.getElementById('fund-manager-name').textContent = 'Manager: ' + manager;
+            document.getElementById('fund_display_budget').value = 'Tk. ' + new Intl.NumberFormat().format(budget);
+            document.getElementById('fund_hidden_budget').value = budget;
+            document.getElementById('fund_hidden_disbursed').value = totalDisbursed;
+            document.getElementById('fund_amount').value = '';
+            document.getElementById('fund_amount_error').style.display = 'none';
+            toggleFundModal();
+        }
+
+        function validateFundAmount() {
+            const budget = parseFloat(document.getElementById('fund_hidden_budget').value) || 0;
+            const disbursed = parseFloat(document.getElementById('fund_hidden_disbursed').value) || 0;
+            const amount = parseFloat(document.getElementById('fund_amount').value) || 0;
+            const errorElement = document.getElementById('fund_amount_error');
+
+            const remaining = Math.round((budget - disbursed) * 100) / 100;
+
+            if (budget > 0 && amount > (remaining + 0.001)) {
+                errorElement.textContent = "Amount exceeds remaining budget (Remaining: Tk. " + new Intl.NumberFormat().format(remaining) + ")";
+                errorElement.style.display = 'block';
+                return false;
+            }
+            return true;
         }
     </script>
 @endsection

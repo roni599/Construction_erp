@@ -10,11 +10,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
 
     <div class="dashboard-grid">
         <div class="glass-panel">

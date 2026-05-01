@@ -10,11 +10,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
 
     <!-- Record Fund Modal -->
     <div id="fundFormModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: center; justify-content: center; z-index: 2000;">
@@ -43,7 +38,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Amount (Tk.)</label>
-                    <input type="number" step="0.01" name="amount" id="fund_amount" class="form-control" required value="{{ old('amount') }}">
+                    <input type="number" step="any" name="amount" id="fund_amount" class="form-control" required value="{{ old('amount') }}" onwheel="this.blur()" autocomplete="off">
                     <small id="amount_error" style="color: var(--danger); display: none; margin-top: 4px;">Amount cannot exceed estimated budget.</small>
                 </div>
                 <div class="form-group">
@@ -234,7 +229,14 @@
                 setTimeout(() => modal.classList.add('active'), 10);
             } else {
                 modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    if (document.getElementById('amount_error')) {
+                        document.getElementById('amount_error').style.display = 'none';
+                    }
+                }, 300);
             }
         }
 
@@ -245,7 +247,14 @@
                 setTimeout(() => modal.classList.add('active'), 10);
             } else {
                 modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    if (document.getElementById('edit_amount_error')) {
+                        document.getElementById('edit_amount_error').style.display = 'none';
+                    }
+                }, 300);
             }
         }
 
@@ -260,11 +269,28 @@
             document.getElementById('edit-payment-method').value = fund.payment_method;
             document.getElementById('edit-note').value = fund.note || '';
             
-            // Validation values
+            // Set values for validation
             document.getElementById('edit-budget-val').value = fund.budget || 0;
             document.getElementById('edit-other-disbursed-val').value = (fund.total_disbursed || 0) - (fund.amount || 0);
             
             toggleEditModal();
+        }
+
+        function validateEditAmount() {
+            const budget = parseFloat(document.getElementById('edit-budget-val').value) || 0;
+            const otherDisbursed = parseFloat(document.getElementById('edit-other-disbursed-val').value) || 0;
+            const amount = parseFloat(document.getElementById('edit-amount').value) || 0;
+            const errorElement = document.getElementById('edit_amount_error');
+
+            const remaining = Math.round((budget - otherDisbursed) * 100) / 100;
+
+            if (budget > 0 && amount > (remaining + 0.001)) {
+                errorElement.textContent = "Amount exceeds remaining budget (Tk. " + new Intl.NumberFormat().format(remaining) + ")";
+                errorElement.style.display = 'block';
+                return false;
+            }
+            errorElement.style.display = 'none';
+            return true;
         }
 
         function updateBudgetInfo() {
@@ -272,6 +298,7 @@
             const selectedOption = select.options[select.selectedIndex];
             const budget = parseFloat(selectedOption.getAttribute('data-budget')) || 0;
             const hiddenInput = document.getElementById('hidden_estimated_budget');
+
             hiddenInput.value = budget;
         }
 
@@ -280,20 +307,20 @@
             const amount = parseFloat(document.getElementById('fund_amount').value) || 0;
             const errorElement = document.getElementById('amount_error');
 
-            if (budget > 0 && amount > (budget + 0.01)) {
+            if (budget > 0 && amount > (budget + 0.001)) {
                 errorElement.style.display = 'block';
-                toastr.error("Amount exceeds project budget!");
+                toastr.error("Amount exceeds estimated budget!");
                 return false;
             }
             errorElement.style.display = 'none';
             return true;
         }
 
-        function validateEditAmount() {
-            return true;
-        }
-
-        // Attach validation to forms
-        document.querySelector('form[action*="storeGlobal"]').onsubmit = validateFundAmount;
+        // Initialize if old value exists
+        window.addEventListener('load', function() {
+            if (document.getElementById('project_select').value) {
+                updateBudgetInfo();
+            }
+        });
     </script>
 @endsection

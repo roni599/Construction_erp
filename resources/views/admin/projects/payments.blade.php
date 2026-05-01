@@ -10,11 +10,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
 
     <!-- Record Payment Modal -->
     <div id="paymentFormModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: center; justify-content: center; z-index: 2000;">
@@ -48,7 +43,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Amount (Tk.)</label>
-                    <input type="number" step="0.01" name="amount" id="payment_amount" class="form-control" required value="{{ old('amount') }}">
+                    <input type="number" step="any" name="amount" id="payment_amount" class="form-control" required value="{{ old('amount') }}" onwheel="this.blur()" autocomplete="off">
                     <small id="amount_error" style="color: var(--danger); display: none; margin-top: 4px;">Amount cannot exceed estimated budget.</small>
                 </div>
                 <div class="form-group">
@@ -239,7 +234,17 @@
                 setTimeout(() => modal.classList.add('active'), 10);
             } else {
                 modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    if (document.getElementById('budget_info_container')) {
+                        document.getElementById('budget_info_container').style.display = 'none';
+                    }
+                    if (document.getElementById('amount_error')) {
+                        document.getElementById('amount_error').style.display = 'none';
+                    }
+                }, 300);
             }
         }
 
@@ -250,7 +255,14 @@
                 setTimeout(() => modal.classList.add('active'), 10);
             } else {
                 modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    const form = modal.querySelector('form');
+                    if (form) form.reset();
+                    if (document.getElementById('edit_amount_error')) {
+                        document.getElementById('edit_amount_error').style.display = 'none';
+                    }
+                }, 300);
             }
         }
 
@@ -278,9 +290,9 @@
             const amount = parseFloat(document.getElementById('edit-amount').value) || 0;
             const errorElement = document.getElementById('edit_amount_error');
 
-            const remaining = budget - otherReceived;
+            const remaining = Math.round((budget - otherReceived) * 100) / 100;
 
-            if (budget > 0 && amount > (remaining + 0.01)) {
+            if (budget > 0 && amount > (remaining + 0.001)) {
                 errorElement.textContent = "Amount exceeds remaining budget (Tk. " + new Intl.NumberFormat().format(remaining) + ")";
                 errorElement.style.display = 'block';
                 return false;
@@ -311,7 +323,7 @@
             const amount = parseFloat(document.getElementById('payment_amount').value) || 0;
             const errorElement = document.getElementById('amount_error');
 
-            if (budget > 0 && amount > (budget + 0.01)) {
+            if (budget > 0 && amount > (budget + 0.001)) {
                 errorElement.style.display = 'block';
                 toastr.error("Amount exceeds estimated budget!");
                 return false;

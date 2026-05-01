@@ -162,8 +162,8 @@
             
             <div class="form-group">
                 <label class="form-label">Amount (Tk.) <span style="color: var(--danger);">*</span></label>
-                <input type="number" step="0.01" name="amount" class="form-control" required 
-                    placeholder="Enter amount" max="{{ $summary['manager_cash_balance'] }}">
+                <input type="number" step="any" name="amount" class="form-control" required 
+                    placeholder="Enter amount" max="{{ $summary['manager_cash_balance'] }}" onwheel="this.blur()" autocomplete="off">
                 <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
                     Available Balance: <span style="color: var(--success); font-weight: 600;">Tk. {{ number_format($summary['manager_cash_balance'], 2) }}</span>
                 </p>
@@ -203,6 +203,8 @@
         const modal = document.getElementById('expenseModal');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto'; // Restore background scrolling
+        const form = modal.querySelector('form');
+        if (form) form.reset();
     }
 
     // Close modal when clicking outside

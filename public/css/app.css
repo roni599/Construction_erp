@@ -674,6 +674,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: var(--danger);
 }
 
+/* Smart positioning for dropdowns in tables to prevent scrollbars */
+.table tr:nth-last-child(-n+3) .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 10px;
+    margin-top: 0;
+    transform-origin: bottom;
+}
+
 /* Modals */
 .modal-backdrop {
     position: fixed;
