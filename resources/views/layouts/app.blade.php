@@ -320,7 +320,7 @@
                         <div style="padding: 5px 0;">
                             @if(Auth::user()->role === 'admin')
                                 <a href="{{ route('admin.profile.index') }}" class="dropdown-item">
-                                    <i class="fas fa-user-circle" style="color: var(--accent-blue);"></i> Profile Settings
+                                    <i class="fas fa-cog" style="color: var(--accent-blue);"></i> Settings
                                 </a>
                             @endif
                             
@@ -350,7 +350,8 @@
                     if(trigger && menu) {
                         trigger.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+                            const isVisible = menu.style.display === 'block';
+                            menu.style.display = isVisible ? 'none' : 'block';
                         });
 
                         document.addEventListener('click', function() {
