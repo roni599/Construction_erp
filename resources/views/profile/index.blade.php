@@ -141,16 +141,53 @@
                             </div>
                         </div>
 
-                        <!-- Internal Action Button -->
                         <div style="padding-top: 32px; border-top: 1px solid var(--border-color); text-align: right; margin-top: auto;">
                             <button type="submit" class="btn btn-primary" style="padding: 14px 40px; font-weight: 600; font-size: 15px; border-radius: 12px; box-shadow: 0 10px 20px rgba(255, 215, 0, 0.2); width: 100%;">
-                                <i class="fas fa-save"></i> Save All Profile Changes
+                                <i class="fas fa-save"></i> Save All Profile & Business Changes
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </form>
+
+        <!-- Security Section -->
+        <div class="glass-panel animate-slide-down" style="margin-top: 32px; padding: 32px; animation-delay: 0.2s;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(255, 76, 76, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger);">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 20px;">Security & Password</h3>
+                    <p style="color: var(--text-secondary); margin: 2px 0 0 0; font-size: 13px;">Update your account password to maintain security.</p>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.profile.password') }}" method="POST">
+                @csrf
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <div style="position: relative;">
+                            <i class="fas fa-shield-alt" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px;"></i>
+                            <input type="password" name="password" class="form-control" style="padding-left: 40px;" required placeholder="••••••••">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <div style="position: relative;">
+                            <i class="fas fa-check-circle" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 13px;"></i>
+                            <input type="password" name="password_confirmation" class="form-control" style="padding-left: 40px;" required placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 24px; text-align: right;">
+                    <button type="submit" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 10px 30px;" onmouseover="this.style.background='rgba(255, 76, 76, 0.1)'" onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-sync-alt"></i> Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <style>

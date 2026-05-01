@@ -93,6 +93,7 @@ Route::middleware('auth')->group(function () {
         // Profile
         Route::get('profile', [\App\Http\Controllers\Web\ProfileController::class, 'index'])->name('profile.index');
         Route::post('profile', [\App\Http\Controllers\Web\ProfileController::class, 'update'])->name('profile.update');
+        Route::post('profile/password', [\App\Http\Controllers\Web\ProfileController::class, 'updatePassword'])->name('profile.password');
     });
 
     // --- Manager Routes ---
