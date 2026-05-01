@@ -23,7 +23,7 @@
     <!-- Filter Section -->
     <div class="glass-panel no-print" style="margin-bottom: 32px;">
         <form action="{{ route('admin.reports.generate') }}" method="GET">
-            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 0 !important;">
                 <div class="form-group">
                     <label class="form-label">Select Project</label>
                     <select name="project_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
@@ -54,29 +54,30 @@
                     <input type="date" name="to_date" class="form-control" value="{{ $filters['to_date'] ?? '' }}">
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <div style="display: flex; gap: 8px;">
-                    <button type="submit" class="btn btn-primary" style="padding: 8px 24px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+                <!-- Search & Clear Group -->
+                <div style="display: flex; gap: 8px; flex: 1; min-width: 200px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 8px 16px; white-space: nowrap;">
                         <i class="fas fa-search"></i> Search
                     </button>
-                    <a href="{{ route('admin.reports.index') }}" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px 24px;">
+                    <a href="{{ route('admin.reports.index') }}" class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger); padding: 8px 16px; white-space: nowrap; text-align: center;">
                         <i class="fas fa-redo"></i> Clear
                     </a>
                 </div>
                 
-                @if(isset($report_data))
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" onclick="openPrintView()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                            <i class="fas fa-print"></i> Print
-                        </button>
-                        <button type="button" onclick="exportToPDF()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                            <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
-                        </button>
-                        <button type="button" onclick="exportToExcel()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-                            <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
-                        </button>
-                    </div>
-                @endif
+                <!-- Export Buttons Group -->
+                <div style="display: flex; gap: 8px; flex: 1.5; min-width: 300px; justify-content: flex-end;">
+                    @php $hasData = isset($report_data); @endphp
+                    <button type="button" onclick="{{ $hasData ? 'openPrintView()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <button type="button" onclick="{{ $hasData ? 'exportToPDF()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                        <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
+                    </button>
+                    <button type="button" onclick="{{ $hasData ? 'exportToExcel()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                        <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
+                    </button>
+                </div>
             </div>
             </div>
         </form>

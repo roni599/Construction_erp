@@ -80,7 +80,7 @@
     </div>
 
     <h3>Project Summaries</h3>
-    <div class="table-wrapper glass-panel" style="padding: 0; overflow: hidden;">
+    <div class="table-wrapper glass-panel" style="padding: 0; overflow-x: auto;">
         <table class="table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <thead>
                 <tr style="background: rgba(255, 255, 255, 0.05);">

@@ -94,17 +94,17 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->clientPayments()->sum('amount'), 2, '.', '') }})">
-                                        <i class="fas fa-money-bill-wave"></i> Client Payment
-                                    </a>
-                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openFundModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', '{{ addslashes($project->manager->name ?? 'Unassigned') }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->managerFunds()->sum('amount'), 2, '.', '') }})">
-                                        <i class="fas fa-hand-holding-usd"></i> Disburse Fund
-                                    </a>
                                     <a class="dropdown-item" href="{{ route('admin.projects.show', $project->id) }}">
                                         <i class="fas fa-tasks"></i> Manage
                                     </a>
                                     <a class="dropdown-item" href="{{ route('admin.projects.edit', $project->id) }}">
                                         <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->clientPayments()->sum('amount'), 2, '.', '') }})">
+                                        <i class="fas fa-money-bill-wave"></i> Client Payment
+                                    </a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openFundModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', '{{ addslashes($project->manager->name ?? 'Unassigned') }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->managerFunds()->sum('amount'), 2, '.', '') }})">
+                                        <i class="fas fa-hand-holding-usd"></i> Disburse Fund
                                     </a>
                                     <form id="delete-project-{{ $project->id }}" action="{{ route('admin.projects.destroy', $project->id) }}" method="POST" style="display: none;">
                                         @csrf
