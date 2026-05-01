@@ -173,12 +173,12 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; gap: 10px;">
-                <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('manager.dashboard') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer;">
                     @if($displayBusinessLogo)
                         <img src="{{ $displayBusinessLogo }}" alt="Logo" style="width: 35px; height: 35px; object-fit: contain;">
                     @endif
                     <div class="sidebar-logo" style="margin-bottom: 0; white-space: nowrap; font-size: 20px;">{{ $displayBusinessName }}</div>
-                </div>
+                </a>
                 <button id="sidebar-close" class="mobile-only" style="background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; flex-shrink: 0; padding: 5px;">
                     <i class="fas fa-times"></i>
                 </button>
