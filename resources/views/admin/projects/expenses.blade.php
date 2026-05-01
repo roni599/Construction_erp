@@ -25,6 +25,10 @@
                 <label class="form-label">End Date</label>
                 <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
             </div>
+            <div class="form-group" style="margin: 0; flex: 1;">
+                <label class="form-label">Invoice No</label>
+                <input type="text" name="invoice_no" class="form-control" placeholder="Search Invoice..." value="{{ request('invoice_no') }}">
+            </div>
             <div style="display: flex; gap: 8px;">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>
                 <a href="{{ route('admin.projects.expenses', $project->id) }}" class="btn btn-outline">Clear</a>

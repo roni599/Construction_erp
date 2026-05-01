@@ -52,6 +52,10 @@
                     <label class="form-label">To Date</label>
                     <input type="date" name="to_date" class="form-control" value="{{ $filters['to_date'] ?? '' }}">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Invoice No</label>
+                    <input type="text" name="invoice_no" class="form-control" placeholder="Search Txn ID..." value="{{ $filters['invoice_no'] ?? '' }}">
+                </div>
             </div>
             <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; gap: 10px;">

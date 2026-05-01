@@ -25,6 +25,12 @@ class ReportWebController extends Controller
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->from_date) $query->where('payment_date', '>=', $request->from_date);
         if ($request->to_date) $query->where('payment_date', '<=', $request->to_date);
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $perPage = $request->get('per_page', 10);
         $report_data = ($perPage === 'all') ? $query->orderBy('payment_date', 'desc')->get() : $query->orderBy('payment_date', 'desc')->paginate($perPage);
@@ -39,6 +45,12 @@ class ReportWebController extends Controller
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->from_date) $query->where('fund_date', '>=', $request->from_date);
         if ($request->to_date) $query->where('fund_date', '<=', $request->to_date);
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $perPage = $request->get('per_page', 10);
         $report_data = ($perPage === 'all') ? $query->orderBy('fund_date', 'desc')->get() : $query->orderBy('fund_date', 'desc')->paginate($perPage);
@@ -53,6 +65,12 @@ class ReportWebController extends Controller
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->from_date) $query->where('expense_date', '>=', $request->from_date);
         if ($request->to_date) $query->where('expense_date', '<=', $request->to_date);
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $perPage = $request->get('per_page', 10);
         $report_data = ($perPage === 'all') ? $query->orderBy('expense_date', 'desc')->get() : $query->orderBy('expense_date', 'desc')->paginate($perPage);
@@ -67,6 +85,12 @@ class ReportWebController extends Controller
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->from_date) $query->where('return_date', '>=', $request->from_date);
         if ($request->to_date) $query->where('return_date', '<=', $request->to_date);
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $perPage = $request->get('per_page', 10);
         $report_data = ($perPage === 'all') ? $query->orderBy('return_date', 'desc')->get() : $query->orderBy('return_date', 'desc')->paginate($perPage);
@@ -86,6 +110,7 @@ class ReportWebController extends Controller
         $type = $request->report_type;
         $from = $request->from_date;
         $to = $request->to_date;
+        $invoiceNo = $request->invoice_no;
 
         $project = Project::findOrFail($projectId);
         $transactions = collect();
@@ -95,6 +120,12 @@ class ReportWebController extends Controller
             $query = ClientPayment::where('project_id', $projectId);
             if ($from) $query->where('payment_date', '>=', $from);
             if ($to) $query->where('payment_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $payments = $query->get()->map(function($item) {
                 return [
                     'date' => $item->payment_date,
@@ -117,6 +148,12 @@ class ReportWebController extends Controller
             $query = ManagerFund::where('project_id', $projectId);
             if ($from) $query->where('fund_date', '>=', $from);
             if ($to) $query->where('fund_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $funds = $query->get()->map(function($item) {
                 return [
                     'date' => $item->fund_date,
@@ -139,6 +176,12 @@ class ReportWebController extends Controller
             $query = Expense::with('category')->where('project_id', $projectId);
             if ($from) $query->where('expense_date', '>=', $from);
             if ($to) $query->where('expense_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $expenses = $query->get()->map(function($item) {
                 return [
                     'date' => $item->expense_date,
@@ -161,6 +204,12 @@ class ReportWebController extends Controller
             $query = \App\Models\ManagerReturn::where('project_id', $projectId);
             if ($from) $query->where('return_date', '>=', $from);
             if ($to) $query->where('return_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $returns = $query->get()->map(function($item) {
                 return [
                     'date' => $item->return_date,
@@ -244,6 +293,7 @@ class ReportWebController extends Controller
         $type = $request->report_type;
         $from = $request->from_date;
         $to = $request->to_date;
+        $invoiceNo = $request->invoice_no;
 
         $project = null;
         if($projectId) {
@@ -257,6 +307,12 @@ class ReportWebController extends Controller
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('payment_date', '>=', $from);
             if ($to) $query->where('payment_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $payments = $query->get()->map(function($item) {
                 return [
                     'date' => $item->payment_date,
@@ -278,6 +334,12 @@ class ReportWebController extends Controller
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('fund_date', '>=', $from);
             if ($to) $query->where('fund_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $funds = $query->get()->map(function($item) {
                 return [
                     'date' => $item->fund_date,
@@ -299,6 +361,12 @@ class ReportWebController extends Controller
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('expense_date', '>=', $from);
             if ($to) $query->where('expense_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $expenses = $query->get()->map(function($item) {
                 return [
                     'date' => $item->expense_date,
@@ -320,6 +388,12 @@ class ReportWebController extends Controller
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('return_date', '>=', $from);
             if ($to) $query->where('return_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $returns = $query->get()->map(function($item) {
                 return [
                     'date' => $item->return_date,
@@ -352,6 +426,7 @@ class ReportWebController extends Controller
         $type = $request->report_type;
         $from = $request->from_date;
         $to = $request->to_date;
+        $invoiceNo = $request->invoice_no;
 
         $transactions = collect();
 
@@ -359,6 +434,12 @@ class ReportWebController extends Controller
             $query = ManagerFund::where('project_id', $project->id)->where('employee_id', $employeeId);
             if ($from) $query->where('fund_date', '>=', $from);
             if ($to) $query->where('fund_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $funds = $query->get()->map(function($item) {
                 return [
                     'date' => $item->fund_date,
@@ -379,6 +460,12 @@ class ReportWebController extends Controller
             $query = Expense::with('category')->where('project_id', $project->id)->where('employee_id', $employeeId);
             if ($from) $query->where('expense_date', '>=', $from);
             if ($to) $query->where('expense_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $expenses = $query->get()->map(function($item) {
                 return [
                     'date' => $item->expense_date,
@@ -399,6 +486,12 @@ class ReportWebController extends Controller
             $query = \App\Models\ManagerReturn::where('project_id', $project->id)->where('employee_id', $employeeId);
             if ($from) $query->where('return_date', '>=', $from);
             if ($to) $query->where('return_date', '<=', $to);
+            if ($invoiceNo) {
+                $query->where(function($q) use ($invoiceNo) {
+                    $q->where('invoice_no', 'like', "%{$invoiceNo}%")
+                      ->orWhere('id', $invoiceNo);
+                });
+            }
             $returns = $query->get()->map(function($item) {
                 return [
                     'date' => $item->return_date,

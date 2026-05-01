@@ -16,7 +16,7 @@
 
     <!-- Filters -->
     <div class="glass-panel no-print" style="margin-bottom: 24px; padding: 20px;">
-        <form method="GET" action="{{ route('admin.reports.project_expense') }}" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 16px; align-items: end;">
+        <form method="GET" action="{{ route('admin.reports.project_expense') }}" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
             <div class="form-group" style="margin: 0;">
                 <label class="form-label">Project</label>
                 <select name="project_id" class="form-control" style="background: rgba(0,0,0,0.8);">
@@ -35,6 +35,10 @@
             <div class="form-group" style="margin: 0;">
                 <label class="form-label">To Date</label>
                 <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Invoice No</label>
+                <input type="text" name="invoice_no" class="form-control" placeholder="Search..." value="{{ request('invoice_no') }}">
             </div>
             <div style="display: flex; gap: 8px;">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>

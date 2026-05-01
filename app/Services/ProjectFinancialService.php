@@ -56,7 +56,7 @@ class ProjectFinancialService
         ];
     }
 
-    public function getProjectLedger(Project $project, $startDate = null, $endDate = null): Collection
+    public function getProjectLedger(Project $project, $startDate = null, $endDate = null, $invoiceNo = null): Collection
     {
         $paymentsQuery = ClientPayment::where('project_id', $project->id);
         $fundsQuery = ManagerFund::where('project_id', $project->id);
@@ -75,6 +75,21 @@ class ProjectFinancialService
             $fundsQuery->whereDate('fund_date', '<=', $endDate);
             $expensesQuery->whereDate('expense_date', '<=', $endDate);
             $returnsQuery->whereDate('return_date', '<=', $endDate);
+        }
+
+        if ($invoiceNo) {
+            $paymentsQuery->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+            $fundsQuery->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+            $expensesQuery->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+            $returnsQuery->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
         }
 
         $payments = $paymentsQuery->get()
@@ -131,19 +146,6 @@ class ProjectFinancialService
 
         // Combine all transactions and sort by date ascending
         $ledger = collect([])->concat($payments)->concat($funds)->concat($expenses)->concat($returns)->sortBy('date')->values();
-
-        // Calculate running balances
-        $runningBalance = 0;
-        $ledger->transform(function ($item) use (&$runningBalance) {
-            // Note: Ledger running balance can be relative to the company.
-            // Client payment = money in (+). Fund = money out (-). Expense = money out (-).
-            // But wait, if we gave fund, money is still in project.
-            // Let's do pure P&L ledger: Client Payments (Credit/In) - Expenses (Debit/Out).
-            // Funds are internal transfers, so we might want to separate the "Manager Cash Ledger" vs "Project P&L Ledger".
-            
-            // We will just provide the raw entries for now.
-            return $item;
-        });
 
         return $ledger;
     }

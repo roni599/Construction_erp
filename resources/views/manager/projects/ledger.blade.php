@@ -33,6 +33,27 @@
         </div>
     </div>
 
+    <div class="glass-panel" style="margin-bottom: 24px; padding: 16px;">
+        <form method="GET" action="{{ route('manager.projects.ledger', $project->id) }}" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+            </div>
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                <label class="form-label">Invoice No</label>
+                <input type="text" name="invoice_no" class="form-control" placeholder="Search Txn ID..." value="{{ request('invoice_no') }}">
+            </div>
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-search"></i> Search</button>
+                <a href="{{ route('manager.projects.ledger', $project->id) }}" class="btn btn-outline" style="white-space: nowrap;">Clear</a>
+            </div>
+        </form>
+    </div>
+
     <div class="glass-panel" style="margin-bottom: 24px;">
         <h3>Project History (Ledger)</h3>
         <div class="table-wrapper" style="margin-top: 16px;">

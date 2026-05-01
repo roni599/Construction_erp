@@ -138,7 +138,7 @@
 
 @section('scripts')
 <div id="expenseModal" class="modal-backdrop">
-    <div class="glass-panel modal-content" style="position: relative; max-width: 500px; width: 100%; margin-top: 50px;">
+    <div class="glass-panel modal-content" style="position: relative; max-width: 500px; width: 100%; margin-top: -20px;">
         <button onclick="closeExpenseModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 20px;">
             <i class="fas fa-times"></i>
         </button>

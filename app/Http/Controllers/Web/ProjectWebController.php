@@ -91,6 +91,12 @@ class ProjectWebController extends Controller
         if ($request->end_date) {
             $query->whereDate('expense_date', '<=', $request->end_date);
         }
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $expenses = $query->latest('expense_date')->paginate($request->per_page ?? 15);
         $projects = Project::all();
@@ -110,6 +116,12 @@ class ProjectWebController extends Controller
         }
         if ($request->end_date) {
             $query->whereDate('return_date', '<=', $request->end_date);
+        }
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
         }
 
         $returns = $query->latest('return_date')->paginate($request->per_page ?? 15);
@@ -179,7 +191,8 @@ class ProjectWebController extends Controller
         $ledger = $this->financialService->getProjectLedger(
             $project, 
             $request->start_date, 
-            $request->end_date
+            $request->end_date,
+            $request->invoice_no
         );
         return view('admin.projects.ledger', compact('project', 'summary', 'ledger'));
     }
@@ -197,6 +210,13 @@ class ProjectWebController extends Controller
             $query->whereDate('expense_date', '<=', $request->end_date);
         }
         
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
+
         $expenses = $query->get();
         $summary = $this->financialService->getProjectSummary($project);
 
@@ -292,6 +312,12 @@ class ProjectWebController extends Controller
         if ($request->filled('end_date')) {
             $query->whereDate('payment_date', '<=', $request->end_date);
         }
+        if ($request->filled('invoice_no')) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $payments = $query->get();
 
@@ -336,6 +362,12 @@ class ProjectWebController extends Controller
         }
         if ($request->filled('end_date')) {
             $query->whereDate('fund_date', '<=', $request->end_date);
+        }
+        if ($request->filled('invoice_no')) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
         }
 
         $funds = $query->get();
@@ -607,14 +639,28 @@ class ProjectWebController extends Controller
             $balances[$p->id] = $sum['manager_cash_balance'];
         }
         $admins = \App\Models\User::where('role', 'admin')->get();
+        $query = ManagerReturn::where('employee_id', $request->user()->employee_id)
+            ->with(['project', 'receivedBy'])
+            ->orderBy('return_date', 'desc');
+
+        if ($request->project_id) {
+            $query->where('project_id', $request->project_id);
+        }
+        if ($request->start_date) {
+            $query->whereDate('return_date', '>=', $request->start_date);
+        }
+        if ($request->end_date) {
+            $query->whereDate('return_date', '<=', $request->end_date);
+        }
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
+
         $perPage = $request->get('per_page', 10);
-        $returns = ($perPage === 'all') ? ManagerReturn::where('employee_id', $request->user()->employee_id)
-            ->with(['project', 'receivedBy'])
-            ->orderBy('return_date', 'desc')
-            ->get() : ManagerReturn::where('employee_id', $request->user()->employee_id)
-            ->with(['project', 'receivedBy'])
-            ->orderBy('return_date', 'desc')
-            ->paginate($perPage);
+        $returns = ($perPage === 'all') ? $query->get() : $query->paginate($perPage);
 
         return view('manager.projects.returns', compact('projects', 'balances', 'admins', 'returns'));
     }
@@ -670,7 +716,12 @@ class ProjectWebController extends Controller
             ->firstOrFail();
         
         $summary = $this->financialService->getProjectSummary($project);
-        $ledger = $this->financialService->getProjectLedger($project);
+        $ledger = $this->financialService->getProjectLedger(
+            $project,
+            $request->start_date,
+            $request->end_date,
+            $request->invoice_no
+        );
         
         return view('manager.projects.ledger', compact('project', 'summary', 'ledger'));
     }
@@ -723,6 +774,12 @@ class ProjectWebController extends Controller
         if ($request->end_date) {
             $query->whereDate('fund_date', '<=', $request->end_date);
         }
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $funds = $query->latest('fund_date')->paginate($request->per_page ?? 10);
         $projects = Project::where('employee_id', auth()->user()->employee_id)->get();
@@ -748,15 +805,28 @@ class ProjectWebController extends Controller
         if ($request->end_date) {
             $query->whereDate('expense_date', '<=', $request->end_date);
         }
+        if ($request->invoice_no) {
+            $query->where(function($q) use ($request) {
+                $q->where('invoice_no', 'like', "%{$request->invoice_no}%")
+                  ->orWhere('id', $request->invoice_no);
+            });
+        }
 
         $expenses = $query->latest('expense_date')->paginate($request->per_page ?? 10);
-        $projects = Project::where('employee_id', auth()->user()->employee_id)->get();
+        $projectsRaw = Project::where('employee_id', auth()->user()->employee_id)->get();
+        $categories = \App\Models\ExpenseCategory::all();
+
+        $projects = $projectsRaw->map(function($project) {
+            $summary = $this->financialService->getProjectSummary($project);
+            $project->balance = $summary['manager_cash_balance'];
+            return $project;
+        });
 
         if ($request->ajax()) {
             return view('manager.projects.expenses_table', compact('expenses'))->render();
         }
 
-        return view('manager.projects.expenses', compact('expenses', 'projects'));
+        return view('manager.projects.expenses', compact('expenses', 'projects', 'categories'));
     }
 
 

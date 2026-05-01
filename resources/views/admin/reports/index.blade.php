@@ -53,6 +53,10 @@
                     <label class="form-label">To Date</label>
                     <input type="date" name="to_date" class="form-control" value="{{ $filters['to_date'] ?? '' }}">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Invoice No</label>
+                    <input type="text" name="invoice_no" class="form-control" placeholder="e.g. PAY-123" value="{{ $filters['invoice_no'] ?? '' }}">
+                </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
                 <!-- Search & Clear Group -->
