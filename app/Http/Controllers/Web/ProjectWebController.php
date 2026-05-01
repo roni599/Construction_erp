@@ -497,7 +497,60 @@ class ProjectWebController extends Controller
             ? ManagerReturn::where('project_id', $id)->with('receivedBy')->orderBy('return_date', 'desc')->get()
             : ManagerReturn::where('project_id', $id)->with('receivedBy')->orderBy('return_date', 'desc')->paginate($perPage, ['*'], 'return_page');
 
-        return view('manager.projects.show', compact('project', 'categories', 'summary', 'admins', 'expenses', 'funds', 'returns'));
+        // Prepare Unified Ledger Data
+        $ledger = collect();
+
+        // 1. Funds Received (Credit)
+        $allFunds = ManagerFund::where('project_id', $id)->get();
+        foreach ($allFunds as $fund) {
+            $ledger->push((object)[
+                'id' => $fund->id,
+                'date' => $fund->fund_date,
+                'type' => 'Fund Received',
+                'description' => 'Received from Admin via ' . ucwords(str_replace('_', ' ', $fund->payment_method)),
+                'credit' => $fund->amount,
+                'debit' => 0,
+                'invoice_no' => $fund->invoice_no ?? 'FND-'.$fund->id,
+                'invoice_url' => route('shared.funds.invoice', $fund->id),
+                'direction' => 'in'
+            ]);
+        }
+
+        // 2. Expenses (Debit)
+        $allExpenses = Expense::where('project_id', $id)->with('category')->get();
+        foreach ($allExpenses as $expense) {
+            $ledger->push((object)[
+                'id' => $expense->id,
+                'date' => $expense->expense_date,
+                'type' => 'Expense',
+                'description' => ($expense->category->name ?? 'General') . ': ' . ($expense->description ?? 'Project Expense'),
+                'credit' => 0,
+                'debit' => $expense->amount,
+                'invoice_no' => $expense->invoice_no ?? 'EXP-'.$expense->id,
+                'invoice_url' => route('shared.expenses.invoice', $expense->id),
+                'direction' => 'out'
+            ]);
+        }
+
+        // 3. Returns (Debit)
+        $allReturns = ManagerReturn::where('project_id', $id)->get();
+        foreach ($allReturns as $ret) {
+            $ledger->push((object)[
+                'id' => $ret->id,
+                'date' => $ret->return_date,
+                'type' => 'Fund Returned',
+                'description' => 'Returned to Admin via ' . ucwords(str_replace('_', ' ', $ret->payment_method)),
+                'credit' => 0,
+                'debit' => $ret->amount,
+                'invoice_no' => $ret->invoice_no ?? 'RET-'.$ret->id,
+                'invoice_url' => route('shared.returns.invoice', $ret->id),
+                'direction' => 'out'
+            ]);
+        }
+
+        $ledger = $ledger->sortByDesc('date');
+
+        return view('manager.projects.show', compact('project', 'categories', 'summary', 'admins', 'expenses', 'funds', 'returns', 'ledger'));
     }
 
     public function managerStoreReturn(Request $request, $id)
