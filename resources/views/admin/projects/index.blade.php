@@ -5,67 +5,9 @@
 @section('content')
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
         <h2 style="margin: 0;">Projects Management</h2>
-        <button class="btn btn-primary" onclick="toggleForm()" style="display: flex; align-items: center; gap: 8px;">
+        <a href="{{ route('admin.projects.create') }}" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-plus"></i> Create Project
-        </button>
-    </div>
-
-
-    <!-- Create Project Modal -->
-    <div id="createProjectModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: flex-start; justify-content: flex-start; z-index: 2000;">
-        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 100%; margin: 0; padding: 32px; position: relative; border-radius: 0; border-bottom: 1px solid var(--border-color);">
-            <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleForm()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
-                <i class="fas fa-times"></i>
-            </button>
-            <div style="margin-bottom: 24px;">
-                <h3 style="margin: 0;">Create New Project</h3>
-            </div>
-            
-            <form method="POST" action="{{ route('admin.projects.store') }}">
-                @csrf
-                <div class="dashboard-grid">
-                    <div class="form-group">
-                        <label class="form-label">Project Name</label>
-                        <input type="text" name="project_name" class="form-control" required value="{{ old('project_name') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Client Name</label>
-                        <input type="text" name="client_name" class="form-control" required value="{{ old('client_name') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Client Phone</label>
-                        <input type="text" name="client_phone" class="form-control" value="{{ old('client_phone') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Client Email</label>
-                        <input type="email" name="client_email" class="form-control" value="{{ old('client_email') }}">
-                    </div>
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label class="form-label">Location</label>
-                        <input type="text" name="location" class="form-control" value="{{ old('location') }}">
-                    </div>
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label class="form-label">Assign Project Manager</label>
-                        <select name="employee_id" class="form-control" style="background: rgba(0,0,0,0.8);">
-                            <option value="">-- Select Manager --</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}" {{ old('employee_id') == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label class="form-label">Initial Status</label>
-                        <select name="status" class="form-control" required style="background: rgba(0,0,0,0.8);">
-                            <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="running" {{ old('status', 'running') == 'running' ? 'selected' : '' }}>Running</option>
-                            <option value="hold" {{ old('status') == 'hold' ? 'selected' : '' }}>Hold</option>
-                            <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Save Project</button>
-            </form>
-        </div>
+        </a>
     </div>
 
     <!-- Filters -->
@@ -278,17 +220,6 @@
     </div>
 
     <script>
-        function toggleForm() {
-            const modal = document.getElementById('createProjectModal');
-            if (modal.style.display === 'none' || modal.style.display === '') {
-                modal.style.display = 'flex';
-                setTimeout(() => modal.classList.add('active'), 10);
-            } else {
-                modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
-            }
-        }
-
         function togglePaymentModal() {
             const modal = document.getElementById('paymentFormModal');
             if (modal.style.display === 'none' || modal.style.display === '') {

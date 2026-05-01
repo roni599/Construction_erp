@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::get('employees/{id}/financials', [EmployeeWebController::class, 'financials'])->name('employees.financials');
         
         // Projects
+        Route::get('projects/create', [ProjectWebController::class, 'adminCreate'])->name('projects.create');
         Route::get('projects', [ProjectWebController::class, 'adminIndex'])->name('projects.index');
         Route::post('projects', [ProjectWebController::class, 'adminStore'])->name('projects.store');
         Route::get('projects/{id}', [ProjectWebController::class, 'adminShow'])->name('projects.show');

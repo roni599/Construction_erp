@@ -194,8 +194,11 @@
                             <i class="fas fa-chevron-down" style="margin-left: auto; width: auto; font-size: 12px;"></i>
                         </a>
                         <div id="projects-submenu" class="submenu" style="display: {{ request()->routeIs('admin.projects.*') ? 'flex' : 'none' }}; flex-direction: column; padding-left: 15px; margin-top: 5px; gap: 5px;">
+                            <a href="{{ route('admin.projects.create') }}" class="nav-item {{ request()->routeIs('admin.projects.create') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
+                                <i class="fas fa-plus-circle" style="font-size: 14px; width: 20px;"></i> <span>Create Project</span>
+                            </a>
                             <a href="{{ route('admin.projects.index') }}" class="nav-item {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.show') || request()->routeIs('admin.projects.edit') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
-                                <i class="fas fa-list" style="font-size: 14px; width: 20px;"></i> <span>All Projects</span>
+                                <i class="fas fa-tasks" style="font-size: 14px; width: 20px;"></i> <span>Manage Project</span>
                             </a>
                             <a href="{{ route('admin.projects.payments.create') }}" class="nav-item {{ request()->routeIs('admin.projects.payments.*') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Client Payment</span>

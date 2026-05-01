@@ -49,6 +49,14 @@ class ProjectWebController extends Controller
         return view('admin.projects.index', compact('projects', 'allProjects', 'employees'));
     }
 
+    public function adminCreate()
+    {
+        $employees = Employee::whereHas('user', function($q) {
+            $q->where('role', 'project_manager');
+        })->get();
+        return view('admin.projects.create', compact('employees'));
+    }
+
     public function adminStore(Request $request)
     {
         $request->validate([
