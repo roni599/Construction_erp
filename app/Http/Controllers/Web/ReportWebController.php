@@ -214,7 +214,19 @@ class ReportWebController extends Controller
     {
         $data = $this->getManagerReportData($request);
         $totals = $this->calculateManagerTotals($data['report_data']);
-        return view('admin.reports.print', array_merge($data, ['filters' => $request->all(), 'totals' => $totals]));
+        
+        $type = $request->report_type;
+        $titleText = "Project Financial Report";
+        if($type == 'fund_pm') $titleText = "Fund Received Report";
+        if($type == 'expense') $titleText = "Project Expenses Report";
+        if($type == 'fund_return') $titleText = "Fund Returned Report";
+
+        return view('admin.reports.print', array_merge($data, [
+            'filters' => $request->all(), 
+            'totals' => $totals,
+            'titleText' => $titleText,
+            'isManager' => true
+        ]));
     }
 
 
@@ -363,6 +375,24 @@ class ReportWebController extends Controller
             $transactions = $transactions->concat($expenses);
         }
 
+        if ($type === 'all' || $type === 'fund_return') {
+            $query = \App\Models\ManagerReturn::where('project_id', $project->id)->where('employee_id', $employeeId);
+            if ($from) $query->where('return_date', '>=', $from);
+            if ($to) $query->where('return_date', '<=', $to);
+            $returns = $query->get()->map(function($item) {
+                return [
+                    'date' => $item->return_date,
+                    'type' => 'Fund Returned',
+                    'method' => $item->payment_method,
+                    'category' => '-',
+                    'description' => $item->note ?? 'Fund Returned to Admin',
+                    'credit' => 0,
+                    'debit' => $item->amount,
+                ];
+            });
+            $transactions = $transactions->concat($returns);
+        }
+
         return [
             'project' => $project,
             'selected_project' => $project,
@@ -392,12 +422,13 @@ class ReportWebController extends Controller
     {
         $fund_received = $report_data->where('type', 'Fund Received')->sum('credit');
         $expenses = $report_data->where('type', 'Expense')->sum('debit');
+        $fund_returned = $report_data->where('type', 'Fund Returned')->sum('debit');
 
         return [
             'client_received' => 0,
             'transferred_pm' => $fund_received,
             'office_balance' => 0,
-            'pm_hand_cash' => $fund_received - $expenses
+            'pm_hand_cash' => $fund_received - ($expenses + $fund_returned)
         ];
     }
 }

@@ -12,16 +12,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div style="background: rgba(255, 76, 76, 0.2); color: var(--danger); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('error') }}
-        </div>
-    @endif
 
     <div class="glass-panel">
         <h3 style="margin-bottom: 20px;">Return History</h3>

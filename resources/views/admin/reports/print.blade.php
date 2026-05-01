@@ -32,10 +32,20 @@
 <body onload="window.print();">
     @php
         $type = $filters['report_type'] ?? 'all';
-        $showIn = in_array($type, ['all', 'fund_pm', 'fund_return', 'client_received']);
-        $showOut = in_array($type, ['all', 'expense']);
+        $isManager = (auth()->user()->role === 'project_manager');
+
+        if ($isManager) {
+            // Manager View: Received from Admin (IN), Expense (OUT), Returned to Admin (OUT)
+            $showIn = in_array($type, ['all', 'fund_pm']);
+            $showOut = in_array($type, ['all', 'expense', 'fund_return']);
+        } else {
+            // Admin View: Client Payment (IN), Fund Return (IN), Disbursed to PM (OUT), Expense (OUT)
+            $showIn = in_array($type, ['all', 'client_received', 'fund_return']);
+            $showOut = in_array($type, ['all', 'fund_pm', 'expense']);
+        }
+
         $colCount = 5 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
-        $isManager = auth()->user()->role === 'project_manager';
+    @endphp
 
         $typeLabels = [
             'all' => 'Financial Report',
@@ -76,8 +86,8 @@
                 <th style="width: 12%;">Method</th>
                 <th style="width: 15%;">Category</th>
                 <th>Description</th>
-                @if($showIn) <th style="width: 15%;" class="text-right">Received (In)</th> @endif
-                @if($showOut) <th style="width: 15%;" class="text-right">Spent (Out)</th> @endif
+                @if($showIn) <th style="width: 15%;" class="text-right">{{ $type === 'fund_pm' && $isManager ? 'Fund Received' : ($type === 'fund_return' && !$isManager ? 'Fund Return' : 'Received (In)') }}</th> @endif
+                @if($showOut) <th style="width: 15%;" class="text-right">{{ $type === 'fund_return' && $isManager ? 'Fund Return' : ($type === 'fund_pm' && !$isManager ? 'Fund Disbursed' : 'Spent (Out)') }}</th> @endif
             </tr>
         </thead>
         <tbody>

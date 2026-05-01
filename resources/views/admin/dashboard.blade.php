@@ -21,7 +21,7 @@
             <span class="stat-value" style="font-size: 24px; color: {{ $totalProfitLoss >= 0 ? 'var(--success)' : 'var(--danger)' }}">
                 {{ number_format($totalProfitLoss, 0) }}
             </span>
-            <small class="stat-desc" style="color: var(--text-secondary); font-size: 0.6rem;">P&L = Payment - (Fund - Expense)</small>
+            <small class="stat-desc" style="color: var(--text-secondary); font-size: 0.6rem;">P&L = Client payment - expense</small>
         </div>
         <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="hand-cash">
             <span class="stat-title" style="font-size: 12px;">

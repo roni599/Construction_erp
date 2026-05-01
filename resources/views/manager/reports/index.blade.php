@@ -93,8 +93,11 @@
                         <thead>
                             @php
                                 $type = $filters['report_type'] ?? 'all';
-                                $showIn = in_array($type, ['all', 'fund_pm', 'fund_return', 'client_received']);
-                                $showOut = in_array($type, ['all', 'expense']);
+                                $isManager = (auth()->user()->role === 'project_manager');
+
+                                // For managers: Fund Received (from Admin) is IN, while Expense and Fund Return (to Admin) are OUT.
+                                $showIn = in_array($type, ['all', 'fund_pm']);
+                                $showOut = in_array($type, ['all', 'expense', 'fund_return']);
                                 $colCount = 5 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
                             @endphp
                             <tr>
@@ -103,8 +106,8 @@
                                 <th>Method</th>
                                 <th>Category</th>
                                 <th>Description</th>
-                                @if($showIn) <th style="text-align: right;">Received (In)</th> @endif
-                                @if($showOut) <th style="text-align: right;">Spent (Out)</th> @endif
+                                @if($showIn) <th style="text-align: right;">{{ $type === 'fund_pm' ? 'Fund Received' : 'Received (In)' }}</th> @endif
+                                @if($showOut) <th style="text-align: right;">{{ $type === 'fund_return' ? 'Fund Return' : 'Spent (Out)' }}</th> @endif
                             </tr>
                         </thead>
                         <tbody>
