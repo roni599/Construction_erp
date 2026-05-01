@@ -5,7 +5,7 @@
 @section('content')
     <div class="flex-between" style="margin-bottom: 32px; animation: fadeIn 0.5s ease;">
         <div>
-            <h2 style="margin: 0; font-size: 24px; letter-spacing: -0.5px;">Executive Profile</h2>
+            <h2 style="margin: 0; font-size: 24px; letter-spacing: -0.5px;">Admin Profile</h2>
             <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Manage your core business identity and personal contact details.</p>
         </div>
     </div>

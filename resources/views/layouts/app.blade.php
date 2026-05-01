@@ -311,23 +311,23 @@
                     </div>
 
                     <!-- Dropdown Menu -->
-                    <div id="profile-menu" style="display: none; position: absolute; top: calc(100% + 12px); right: 0; width: 220px; background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; overflow: hidden; animation: slideDown 0.2s ease;">
-                        <div style="padding: 15px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                    <div id="profile-menu" class="dropdown-menu" style="width: 220px; right: 0; top: calc(100% + 12px);">
+                        <div style="padding: 15px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.02);">
                             <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">{{ Auth::user()->name }}</div>
                             <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">{{ Auth::user()->business_name ?? 'Administrator' }}</div>
                         </div>
                         
                         <div style="padding: 5px 0;">
                             @if(Auth::user()->role === 'admin')
-                                <a href="{{ route('admin.profile.index') }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: var(--text-primary); text-decoration: none; font-size: 13px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-user-circle" style="width: 16px; color: var(--accent-blue);"></i> Profile Settings
+                                <a href="{{ route('admin.profile.index') }}" class="dropdown-item">
+                                    <i class="fas fa-user-circle" style="color: var(--accent-blue);"></i> Profile Settings
                                 </a>
                             @endif
                             
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: var(--danger); background: none; border: none; font-size: 13px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(231, 76, 60, 0.1)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-sign-out-alt" style="width: 16px;"></i> Logout
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
                                 </button>
                             </form>
                         </div>
