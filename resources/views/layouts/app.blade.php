@@ -284,6 +284,9 @@
         <main class="main-content">
             <div class="glass-panel no-print" style="margin-bottom: 24px; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px; overflow: visible !important; position: relative; z-index: 100;">
                 <div style="display: flex; align-items: center; gap: 16px;">
+                    <button id="sidebar-collapse-toggle" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--accent-yellow); cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255, 215, 0, 0.1)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.transform='scale(1)'">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <div style="display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid var(--border-color);">
                         <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px;">@yield('title')</span>
                     </div>
@@ -436,6 +439,24 @@
         // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'dark';
         setTheme(savedTheme);
+
+        // Sidebar Collapse Logic
+        const sidebar = document.getElementById('sidebar');
+        const collapseBtn = document.getElementById('sidebar-collapse-toggle');
+        
+        function toggleSidebarCollapse() {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', toggleSidebarCollapse);
+        }
+
+        // Initialize sidebar state from localStorage
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
 
         // Dropdown Logic
         function closeAllDropdowns() {
