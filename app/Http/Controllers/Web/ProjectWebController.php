@@ -457,6 +457,13 @@ class ProjectWebController extends Controller
         return view('manager.projects.return_invoice', compact('return', 'adminInfo'));
     }
 
+    public function invoiceExpense($id)
+    {
+        $expense = Expense::with(['project', 'category', 'employee'])->findOrFail($id);
+        $adminInfo = \App\Models\User::where('role', 'admin')->first();
+        return view('manager.projects.expenses_invoice', compact('expense', 'adminInfo'));
+    }
+
     // --- MANAGER VIEWS --- //
 
     public function managerIndex(Request $request)
@@ -691,12 +698,6 @@ class ProjectWebController extends Controller
         return view('manager.projects.expenses', compact('expenses', 'projects'));
     }
 
-    public function invoiceExpense($id)
-    {
-        $expense = \App\Models\Expense::with(['project', 'category', 'employee'])->findOrFail($id);
-        $adminInfo = \App\Models\User::where('role', 'admin')->first();
-        return view('manager.projects.expenses_invoice', compact('expense', 'adminInfo'));
-    }
 
     public function editExpense($id)
     {

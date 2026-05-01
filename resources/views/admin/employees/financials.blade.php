@@ -65,75 +65,90 @@
         </div>
     </div>
 
-    <div class="dashboard-grid" style="margin-top: 32px; grid-template-columns: 1fr 1fr;">
-        <!-- Funds Received -->
-        <div class="glass-panel" style="grid-column: span 1;">
-            <h3>Funds Received</h3>
-            @if($employee->managerFunds->count() > 0)
-                <div class="table-wrapper" style="margin-top: 16px;">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Project</th>
-                                <th>Method</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($employee->managerFunds->sortByDesc('fund_date') as $fund)
-                                <tr>
-                                    <td>{{ $fund->fund_date->format('Y-m-d') }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.projects.show', $fund->project_id) }}" style="color: var(--accent-blue); text-decoration: none;">
-                                            {{ $fund->project->project_name }}
-                                        </a>
-                                    </td>
-                                    <td style="text-transform: capitalize;">{{ str_replace('_', ' ', $fund->payment_method) }}</td>
-                                    <td style="color: var(--success);">+Tk. {{ number_format($fund->amount, 2) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p style="color: var(--text-secondary); margin-top: 16px;">No funds have been transferred to this project manager yet.</p>
-            @endif
+    <div class="glass-panel" style="margin-top: 32px;">
+        <div class="flex-between" style="margin-bottom: 20px;">
+            <h3>Unified Transaction Ledger</h3>
+            <div style="font-size: 13px; color: var(--text-secondary);">Chronological record of all manager transactions</div>
         </div>
-
-        <!-- Expenses Logged -->
-        <div class="glass-panel" style="grid-column: span 1;">
-            <h3>Expenses Logged</h3>
-            @if($employee->expenses->count() > 0)
-                <div class="table-wrapper" style="margin-top: 16px;">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Project</th>
-                                <th>Category</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($employee->expenses->sortByDesc('expense_date') as $expense)
-                                <tr>
-                                    <td>{{ $expense->expense_date->format('Y-m-d') }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.projects.show', $expense->project_id) }}" style="color: var(--accent-blue); text-decoration: none;">
-                                            {{ $expense->project->project_name }}
-                                        </a>
-                                    </td>
-                                    <td>{{ $expense->category->name }}</td>
-                                    <td style="color: var(--danger);">-Tk. {{ number_format($expense->amount, 2) }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p style="color: var(--text-secondary); margin-top: 16px;">This project manager has not logged any expenses yet.</p>
-            @endif
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Invoice No</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Project</th>
+                        <th>Description</th>
+                        <th style="text-align: right;">Credit (In)</th>
+                        <th style="text-align: right;">Debit (Out)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($ledger as $item)
+                        <tr>
+                            <td>
+                                <a href="{{ $item->invoice_url }}" style="color: var(--accent-blue); font-weight: 600;">
+                                    {{ $item->invoice_no ?? 'REF-'.str_pad($item->id, 5, '0', STR_PAD_LEFT) }}
+                                </a>
+                            </td>
+                            <td>{{ $item->date->format('d M, Y') }}</td>
+                            <td>
+                                @if($item->direction === 'in')
+                                    <span class="badge" style="background: rgba(0, 230, 118, 0.1); color: var(--success);">Credit</span>
+                                @else
+                                    <span class="badge" style="background: rgba(255, 76, 76, 0.1); color: var(--danger);">Debit</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('admin.projects.show', $item->project_id) }}" style="color: var(--text-primary); text-decoration: none;">
+                                    {{ $item->project }}
+                                </a>
+                            </td>
+                            <td style="font-size: 13px; color: var(--text-secondary);">
+                                <span style="color: var(--text-primary); font-weight: 500;">[{{ $item->type }}]</span> {{ $item->description }}
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: var(--success);">
+                                @if($item->direction === 'in')
+                                    Tk. {{ number_format($item->amount, 2) }}
+                                @else
+                                    <span style="color: var(--text-secondary); opacity: 0.3;">-</span>
+                                @endif
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: var(--danger);">
+                                @if($item->direction === 'out')
+                                    Tk. {{ number_format($item->amount, 2) }}
+                                @else
+                                    <span style="color: var(--text-secondary); opacity: 0.3;">-</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                                No financial transactions found for this project manager.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot>
+                    <tr style="background: rgba(255,255,255,0.03); font-weight: bold; border-top: 2px solid var(--border-color);">
+                        <td colspan="5" style="text-align: right; padding: 12px 16px;">Total Summary:</td>
+                        <td style="text-align: right; color: var(--success); padding: 12px 16px; border-bottom: 3px double var(--border-color);">
+                            Tk. {{ number_format($totalFunds, 2) }}
+                        </td>
+                        <td style="text-align: right; color: var(--danger); padding: 12px 16px; border-bottom: 3px double var(--border-color);">
+                            Tk. {{ number_format($totalExpenses + $totalReturns, 2) }}
+                        </td>
+                    </tr>
+                    <tr style="background: rgba(255,255,255,0.05); font-weight: 800;">
+                        <td colspan="5" style="text-align: right; padding: 12px 16px;">Current Cash in Hand:</td>
+                        <td colspan="2" style="text-align: center; color: {{ $balance >= 0 ? 'var(--success)' : 'var(--danger)' }}; padding: 12px 16px; font-size: 16px;">
+                            Tk. {{ number_format($balance, 2) }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 @endsection

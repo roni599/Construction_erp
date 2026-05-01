@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('projects-funds/{id}/edit', [ProjectWebController::class, 'editFund'])->name('projects.funds.edit');
         Route::put('projects-funds/{id}', [ProjectWebController::class, 'updateFund'])->name('projects.funds.update');
         Route::get('projects-funds/{id}/invoice', [ProjectWebController::class, 'invoiceFund'])->name('projects.funds.invoice');
+        Route::get('projects-returns/{id}/invoice', [ProjectWebController::class, 'invoiceReturn'])->name('projects.returns.invoice');
+        Route::get('expenses/{id}/invoice', [ProjectWebController::class, 'invoiceExpense'])->name('projects.expenses.invoice');
 
         // Reports
         Route::get('reports', [ReportWebController::class, 'index'])->name('reports.index');

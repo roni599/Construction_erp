@@ -223,7 +223,57 @@ class EmployeeWebController extends Controller
             $summary['balance'] = $summary['received'] - $summary['expenses'] - ($summary['returns'] ?? 0);
         }
 
-        return view('admin.employees.financials', compact('employee', 'totalFunds', 'totalExpenses', 'totalReturns', 'balance', 'projectSummary'));
+        // Create a unified chronological ledger
+        $ledger = collect();
+
+        foreach ($employee->managerFunds as $fund) {
+            $ledger->push((object)[
+                'id' => $fund->id,
+                'type' => 'Fund Received',
+                'date' => $fund->fund_date,
+                'project' => $fund->project->project_name ?? 'N/A',
+                'project_id' => $fund->project_id,
+                'description' => 'Fund Received via ' . ucwords(str_replace('_', ' ', $fund->payment_method)),
+                'amount' => $fund->amount,
+                'invoice_no' => $fund->invoice_no,
+                'invoice_url' => route('admin.projects.funds.invoice', $fund->id),
+                'direction' => 'in'
+            ]);
+        }
+
+        foreach ($employee->expenses as $expense) {
+            $ledger->push((object)[
+                'id' => $expense->id,
+                'type' => 'Expense',
+                'date' => $expense->expense_date,
+                'project' => $expense->project->project_name ?? 'N/A',
+                'project_id' => $expense->project_id,
+                'description' => 'Expense: ' . ($expense->category->name ?? 'General'),
+                'amount' => $expense->amount,
+                'invoice_no' => $expense->invoice_no,
+                'invoice_url' => route('admin.projects.expenses.invoice', $expense->id),
+                'direction' => 'out'
+            ]);
+        }
+
+        foreach ($employee->managerReturns as $return) {
+            $ledger->push((object)[
+                'id' => $return->id,
+                'type' => 'Refund',
+                'date' => $return->return_date,
+                'project' => $return->project->project_name ?? 'N/A',
+                'project_id' => $return->project_id,
+                'description' => 'Refund to Admin (' . ($return->account->institution_name ?? 'N/A') . ')',
+                'amount' => $return->amount,
+                'invoice_no' => $return->invoice_no,
+                'invoice_url' => route('admin.projects.returns.invoice', $return->id),
+                'direction' => 'out'
+            ]);
+        }
+
+        $ledger = $ledger->sortByDesc('date');
+
+        return view('admin.employees.financials', compact('employee', 'totalFunds', 'totalExpenses', 'totalReturns', 'balance', 'projectSummary', 'ledger'));
     }
 
     public function destroy($id)
