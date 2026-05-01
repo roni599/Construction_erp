@@ -498,14 +498,26 @@
 
                         // Update Dashboard Stat Cards if they exist
                         $newContent.find('.stat-card').each(function() {
-                            const title = $(this).find('.stat-title').text().trim();
-                            const value = $(this).find('.stat-value').html();
-                            
-                            $('.stat-card').each(function() {
-                                if ($(this).find('.stat-title').text().trim() === title) {
-                                    $(this).find('.stat-value').html(value);
+                            const statType = $(this).data('stat-type');
+                            if (statType) {
+                                const $currentCard = $('.stat-card[data-stat-type="' + statType + '"]');
+                                if ($currentCard.length) {
+                                    // Update everything: title, value, description, and container style
+                                    $currentCard.find('.stat-title').html($(this).find('.stat-title').html());
+                                    $currentCard.find('.stat-value').html($(this).find('.stat-value').html());
+                                    $currentCard.find('.stat-desc').html($(this).find('.stat-desc').html());
+                                    $currentCard.attr('style', $(this).attr('style'));
                                 }
-                            });
+                            } else {
+                                // Fallback for cards without data-stat-type
+                                const title = $(this).find('.stat-title').text().trim();
+                                const value = $(this).find('.stat-value').html();
+                                $('.stat-card').each(function() {
+                                    if ($(this).find('.stat-title').text().trim() === title) {
+                                        $(this).find('.stat-value').html(value);
+                                    }
+                                });
+                            }
                         });
 
                         // Update Pagination links for THIS table

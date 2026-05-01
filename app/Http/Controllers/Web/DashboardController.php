@@ -70,6 +70,15 @@ class DashboardController extends Controller
             $q->where('role', 'project_manager');
         })->get();
 
+        $isSearch = $request->project_id || $request->employee_id || $request->start_date || $request->end_date;
+        $selectedManager = null;
+        if ($request->employee_id) {
+            $selectedManager = \App\Models\Employee::find($request->employee_id);
+        } elseif ($request->project_id) {
+            $proj = Project::find($request->project_id);
+            $selectedManager = $proj ? $proj->manager : null;
+        }
+
         return view('admin.dashboard', compact(
             'totalProjects', 
             'activeProjects', 
@@ -78,7 +87,9 @@ class DashboardController extends Controller
             'summaries',
             'allProjects',
             'employees',
-            'searchTotals'
+            'searchTotals',
+            'isSearch',
+            'selectedManager'
         ));
     }
 

@@ -37,7 +37,7 @@ class ProjectFinancialService
         $totalManagerReturns = $returnsQuery->sum('amount');
 
         $managerCashBalance = $totalManagerFunds - $totalExpenses - $totalManagerReturns;
-        $profitLoss = $totalClientPayments - $totalExpenses;
+        $profitLoss = $totalClientPayments - ($totalManagerFunds - $totalExpenses);
 
         return [
             'project_id' => $project->id,

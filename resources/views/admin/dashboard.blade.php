@@ -8,27 +8,39 @@
     </div>
 
     <div class="dashboard-grid" style="gap: 16px; margin-bottom: 24px;">
-        <div class="glass-panel stat-card" style="padding: 16px;">
+        <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="total-projects">
             <span class="stat-title" style="font-size: 12px;">Total Projects</span>
             <span class="stat-value" style="font-size: 24px;">{{ $totalProjects }}</span>
         </div>
-        <div class="glass-panel stat-card" style="padding: 16px;">
+        <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="active-projects">
             <span class="stat-title" style="font-size: 12px;">Active Projects</span>
             <span class="stat-value" style="font-size: 24px;">{{ $activeProjects }}</span>
         </div>
-        <div class="glass-panel stat-card" style="padding: 16px;">
+        <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="profit-loss">
             <span class="stat-title" style="font-size: 12px;">Overall Profit / Loss</span>
             <span class="stat-value" style="font-size: 24px; color: {{ $totalProfitLoss >= 0 ? 'var(--success)' : 'var(--danger)' }}">
                 {{ number_format($totalProfitLoss, 0) }}
             </span>
-            <small style="color: var(--text-secondary); font-size: 0.6rem;">P&L=(Office + PM Cash)</small>
+            <small class="stat-desc" style="color: var(--text-secondary); font-size: 0.6rem;">P&L = Payment - (Fund - Expense)</small>
         </div>
-        <div class="glass-panel stat-card" style="padding: 16px;">
-            <span class="stat-title" style="font-size: 12px;">All PM Total Hand Cash</span>
+        <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="hand-cash">
+            <span class="stat-title" style="font-size: 12px;">
+                @if($isSearch)
+                    PM hand cash
+                @else
+                    All PM Total Hand Cash
+                @endif
+            </span>
             <span class="stat-value" style="font-size: 24px; color: {{ $totalPmHandCash >= 0 ? 'var(--success)' : 'var(--danger)' }}">
                 {{ number_format($totalPmHandCash, 0) }}
             </span>
-            <small style="color: var(--text-secondary); font-size: 0.6rem;">Held by all PMs</small>
+            <small class="stat-desc" style="color: var(--text-secondary); font-size: 0.6rem;">
+                @if($selectedManager)
+                    {{ $selectedManager->name }}
+                @else
+                    Held by all PMs
+                @endif
+            </small>
         </div>
     </div>
 
