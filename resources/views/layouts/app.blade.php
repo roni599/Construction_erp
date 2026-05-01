@@ -570,7 +570,7 @@
                 const entriesHtml = `
                     <div class="form-group ajax-entries-group" style="margin: 0; max-width: 200px;">
                         <label class="form-label">Show Records</label>
-                        <select name="per_page" class="entries-select form-control" style="background: rgba(0,0,0,0.8);">
+                        <select name="per_page" class="entries-select form-control">
                             <option value="10">10 Entries</option>
                             <option value="20">20 Entries</option>
                             <option value="30">30 Entries</option>
