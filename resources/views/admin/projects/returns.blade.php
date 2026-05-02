@@ -7,16 +7,8 @@
         <h2>Record Fund Return from PM</h2>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div style="background: rgba(255, 76, 76, 0.2); color: var(--danger); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('error') }}
-        </div>
-    @endif
+
+
 
     <div class="glass-panel" style="max-width: 600px;">
         <form method="POST" action="{{ route('admin.projects.returns.storeGlobal') }}">

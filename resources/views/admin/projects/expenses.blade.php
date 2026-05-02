@@ -120,11 +120,23 @@
 
     <script>
         function confirmExpenseDelete(url) {
-            if (confirm('Are you sure you want to delete this expense? This action will return the amount to the project balance and cannot be undone.')) {
-                const form = document.getElementById('deleteExpenseForm');
-                form.action = url;
-                form.submit();
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This action will return the amount to the project balance and cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF4C4C',
+                cancelButtonColor: '#a0a0a0',
+                confirmButtonText: 'Yes, delete it!',
+                background: document.documentElement.getAttribute('data-theme') === 'light' ? '#fff' : '#1e1e1e',
+                color: document.documentElement.getAttribute('data-theme') === 'light' ? '#000' : '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('deleteExpenseForm');
+                    form.action = url;
+                    form.submit();
+                }
+            });
         }
     </script>
 @endsection

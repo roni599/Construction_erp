@@ -7,11 +7,7 @@
         <h2>Fund Received List (from PM)</h2>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
+
 
     <!-- Filters -->
     <div class="glass-panel" style="margin-bottom: 24px; padding: 16px;">
