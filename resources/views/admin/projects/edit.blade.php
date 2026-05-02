@@ -8,11 +8,6 @@
         <a href="{{ route('admin.projects.show', $project->id) }}" class="btn btn-outline">&larr; Back to Details</a>
     </div>
 
-    @if(session('success'))
-        <div style="background: rgba(0, 230, 118, 0.2); color: var(--success); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-            {{ session('success') }}
-        </div>
-    @endif
 
     <div class="glass-panel animate-fade-in" style="margin-bottom: 32px;">
         <form method="POST" action="{{ route('admin.projects.update', $project->id) }}">

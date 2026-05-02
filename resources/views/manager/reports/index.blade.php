@@ -361,6 +361,7 @@
                 body: body,
                 foot: foot,
                 startY: nextY, // No gap
+                showFoot: 'lastPage',
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', lineWidth: 0.1, lineColor: [200, 200, 200] },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },

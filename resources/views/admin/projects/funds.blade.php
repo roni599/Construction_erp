@@ -12,8 +12,8 @@
 
 
     <!-- Record Fund Modal -->
-    <div id="fundFormModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+    <div id="fundFormModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: flex-start; justify-content: center; padding-top: 50px; z-index: 2000;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleForm()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -27,9 +27,9 @@
                     <label class="form-label">Select Project</label>
                     <select name="project_id" id="project_select" class="form-control" required style="background: rgba(0,0,0,0.8);" onchange="updateBudgetInfo()">
                         <option value="" data-budget="0">-- Choose a Project --</option>
-                        @foreach($projects as $p)
+                        @foreach($projects->where('status', 'running') as $p)
                             <option value="{{ $p->id }}" data-budget="{{ $p->estimated_budget }}" {{ old('project_id') == $p->id ? 'selected' : '' }}>
-                                {{ $p->project_name }} (Manager: {{ $p->manager->name }})
+                                {{ $p->project_name }} (Manager: {{ $p->manager->name ?? 'Unassigned' }})
                             </option>
                         @endforeach
                     </select>
@@ -62,8 +62,8 @@
     </div>
 
     <!-- Edit Fund Modal -->
-    <div id="editFundModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+    <div id="editFundModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; padding-top: 50px; z-index: 2000;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleEditModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
