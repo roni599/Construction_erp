@@ -3,7 +3,7 @@
 @section('title', 'Create Project')
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+    <div class="flex-between" style="margin-bottom: 32px;">
         <h2 style="margin: 0;">Create New Project</h2>
         <a href="{{ route('admin.projects.index') }}" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-arrow-left"></i> Back to Projects
@@ -53,11 +53,11 @@
                     </select>
                 </div>
             </div>
-            <div style="margin-top: 32px; display: flex; gap: 16px;">
-                <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px;">
+            <div class="btn-group" style="margin-top: 32px;">
+                <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Save Project
                 </button>
-                <a href="{{ route('admin.projects.index') }}" class="btn btn-outline" style="flex: 1; padding: 12px; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-outline">
                     Cancel
                 </a>
             </div>

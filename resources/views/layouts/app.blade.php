@@ -250,8 +250,11 @@
                             <i class="fas fa-chevron-down" style="margin-left: auto; width: auto; font-size: 12px;"></i>
                         </a>
                         <div id="manager-projects-submenu" class="submenu" style="display: {{ request()->routeIs('manager.projects.*') || request()->routeIs('manager.returns.*') || request()->routeIs('manager.funds.*') || request()->routeIs('manager.expenses.*') ? 'flex' : 'none' }}; flex-direction: column; padding-left: 15px; margin-top: 5px; gap: 5px;">
+                            <a href="{{ route('manager.expenses.create') }}" class="nav-item {{ request()->routeIs('manager.expenses.create') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
+                                <i class="fas fa-plus-circle" style="font-size: 14px; width: 20px;"></i> <span>Create Expense</span>
+                            </a>
                             <a href="{{ route('manager.projects.index') }}" class="nav-item {{ request()->routeIs('manager.projects.index') || request()->routeIs('manager.projects.show') || request()->routeIs('manager.projects.ledger') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
-                                <i class="fas fa-list" style="font-size: 14px; width: 20px;"></i> <span>All My Projects</span>
+                                <i class="fas fa-list" style="font-size: 14px; width: 20px;"></i> <span>My All Projects</span>
                             </a>
                             <a href="{{ route('manager.funds.index') }}" class="nav-item {{ request()->routeIs('manager.funds.*') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Fund Receive</span>
@@ -290,7 +293,7 @@
                     <button id="sidebar-collapse-toggle" class="btn btn-outline" style="padding: 8px 12px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--accent-yellow); cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255, 215, 0, 0.1)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'; this.style.transform='scale(1)'">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid var(--border-color);">
+                    <div class="page-title-container" style="display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid var(--border-color);">
                         <span style="font-size: 13px; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px;">@yield('title')</span>
                     </div>
                     <div style="height: 24px; width: 1px; background: var(--border-color);"></div>
@@ -299,7 +302,7 @@
                     </button>
                     <div style="height: 24px; width: 1px; background: var(--border-color);"></div>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-weight: 500; font-size: 14px;">{{ Auth::user()->name }}</span>
+                        <span class="admin-name-text" style="font-weight: 500; font-size: 14px;">{{ Auth::user()->name }}</span>
                     </div>
                 </div>
                 
@@ -463,12 +466,6 @@
         }
 
         // Dropdown Logic
-        function closeAllDropdowns() {
-            document.querySelectorAll('.dropdown-menu.show').forEach(m => {
-                m.classList.remove('show');
-            });
-        }
-
         document.addEventListener('click', function(event) {
             const dropdownToggle = event.target.closest('.dropdown-toggle');
             const dropdownMenu = event.target.closest('.dropdown-menu');
@@ -476,18 +473,49 @@
             if (dropdownToggle) {
                 const parent = dropdownToggle.closest('.dropdown');
                 const menu = parent.querySelector('.dropdown-menu');
-
+                const row = dropdownToggle.closest('tr');
                 const isOpen = menu.classList.contains('show');
+                
                 closeAllDropdowns();
 
                 if (!isOpen) {
                     menu.classList.add('show');
+                    if (row) row.classList.add('dropdown-row-open');
+                    
+                    // Desktop/Mobile: Keep it absolute and align right
+                    menu.style.right = '0';
+                    menu.style.left = 'auto';
+                    menu.style.top = '100%';
+                    
+                    // Check if it's going off screen vertically
+                    const rect = menu.getBoundingClientRect();
+                    if (rect.bottom > window.innerHeight) {
+                        menu.style.top = 'auto';
+                        menu.style.bottom = '100%';
+                    }
                 }
                 event.stopPropagation();
             } else if (!dropdownMenu) {
                 closeAllDropdowns();
             }
         });
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+                m.classList.remove('show');
+                m.style.bottom = '';
+                m.style.top = '';
+                const row = m.closest('tr');
+                if (row) row.classList.remove('dropdown-row-open');
+            });
+        }
+
+        // Close fixed dropdowns on scroll to prevent "floating"
+        window.addEventListener('scroll', function() {
+            if (window.innerWidth <= 992) {
+                closeAllDropdowns();
+            }
+        }, true);
 
         // Custom Server-Side AJAX Table Logic
         $(document).ready(function() {

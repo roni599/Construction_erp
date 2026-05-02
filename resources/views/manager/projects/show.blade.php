@@ -37,9 +37,9 @@
                 <div class="flex-between" style="margin-bottom: 16px;">
                     <h3 style="margin: 0;">Unified Project Ledger</h3>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-primary" onclick="openExpenseModal()" style="padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                        <a href="{{ route('manager.expenses.create', ['project_id' => $project->id]) }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-plus-circle"></i> Record Expense
-                        </button>
+                        </a>
                         <a href="{{ route('manager.returns.create', ['project_id' => $project->id]) }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 13px; border-color: var(--accent-yellow); color: var(--accent-yellow); display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-undo"></i> Return Cash
                         </a>
@@ -150,43 +150,49 @@
         
         <form method="POST" action="{{ route('manager.projects.expenses.store', $project->id) }}" enctype="multipart/form-data">
             @csrf
-            <div class="form-group">
-                <label class="form-label">Expense Category <span style="color: var(--danger);">*</span></label>
-                <select name="expense_category_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
-                    <option value="">-- Select Category --</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                    @endforeach
-                </select>
+            <div class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div class="form-group">
+                    <label class="form-label">Category <span style="color: var(--danger);">*</span></label>
+                    <select name="expense_category_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        <option value="">-- Select --</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Amount <span style="color: var(--danger);">*</span></label>
+                    <input type="number" step="any" name="amount" class="form-control" required 
+                        placeholder="Tk." max="{{ $summary['manager_cash_balance'] }}" onwheel="this.blur()" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="modal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div class="form-group">
+                    <label class="form-label">Date <span style="color: var(--danger);">*</span></label>
+                    <input type="date" name="expense_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Receipt (Optional)</label>
+                    <input type="file" name="bill_image" class="form-control" accept="image/*" style="font-size: 11px; padding: 4px;">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Amount (Tk.) <span style="color: var(--danger);">*</span></label>
-                <input type="number" step="any" name="amount" class="form-control" required 
-                    placeholder="Enter amount" max="{{ $summary['manager_cash_balance'] }}" onwheel="this.blur()" autocomplete="off">
-                <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                    Available Balance: <span style="color: var(--success); font-weight: 600;">Tk. {{ number_format($summary['manager_cash_balance'], 2) }}</span>
+            <div class="form-group" style="margin-top: -4px; margin-bottom: 8px;">
+                <p style="font-size: 11px; color: var(--text-secondary);">
+                    Available: <span style="color: var(--success); font-weight: 600;">Tk. {{ number_format($summary['manager_cash_balance'], 2) }}</span>
                 </p>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Expense Date <span style="color: var(--danger);">*</span></label>
-                <input type="date" name="expense_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="1" placeholder="Short description..."></textarea>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Description (Optional)</label>
-                <textarea name="description" class="form-control" rows="2" placeholder="What was this for?"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Upload Receipt (Optional)</label>
-                <input type="file" name="bill_image" class="form-control" accept="image/*">
-            </div>
-            
-            <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button type="button" class="btn btn-outline" onclick="closeExpenseModal()" style="flex: 1;">Cancel</button>
-                <button type="submit" class="btn btn-primary" style="flex: 2;">Save Transaction</button>
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button type="button" class="btn btn-outline" onclick="closeExpenseModal()" style="flex: 1; padding: 10px !important;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 2; padding: 10px !important;">Save Transaction</button>
             </div>
         </form>
     </div>

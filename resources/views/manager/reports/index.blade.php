@@ -62,7 +62,6 @@
                     <button type="submit" class="btn btn-primary">Search</button>
                     <a href="{{ route('manager.reports.index') }}" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);">Clear</a>
                 </div>
-                @if(isset($report_data))
                 <div style="display: flex; gap: 10px;">
                     <button type="button" onclick="openPrintView()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-print"></i> Print
@@ -74,7 +73,6 @@
                         <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
                     </button>
                 </div>
-                @endif
             </div>
         </form>
     </div>

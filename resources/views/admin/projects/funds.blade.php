@@ -3,7 +3,7 @@
 @section('title', 'Disburse Funds to Manager')
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+    <div class="flex-between" style="margin-bottom: 32px;">
         <h2 style="margin: 0;">Disburse Funds to Manager</h2>
         <button class="btn btn-primary" onclick="toggleForm()" style="display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-plus"></i> Record Disburse Fund
@@ -53,7 +53,10 @@
                         <option value="mobile_banking" {{ old('payment_method') == 'mobile_banking' ? 'selected' : '' }}>Mobile Banking</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Disburse Fund</button>
+                <div class="btn-group" style="margin-top: 24px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">Disburse Fund</button>
+                    <button type="button" class="btn btn-outline" style="flex: 1;" onclick="toggleForm()">Cancel</button>
+                </div>
             </form>
         </div>
     </div>

@@ -58,31 +58,30 @@
                     <input type="text" name="invoice_no" class="form-control" placeholder="e.g. PAY-123" value="{{ $filters['invoice_no'] ?? '' }}">
                 </div>
             </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+            <div class="btn-group" style="margin-top: 24px; flex-wrap: wrap; flex-direction: row !important; justify-content: space-between;">
                 <!-- Search & Clear Group -->
-                <div style="display: flex; gap: 8px; flex: 1; min-width: 200px;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 8px 16px; white-space: nowrap;">
+                <div class="btn-group" style="flex: 1; min-width: 200px; flex-direction: row !important;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
                         <i class="fas fa-search"></i> Search
                     </button>
-                    <a href="{{ route('admin.reports.index') }}" class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger); padding: 8px 16px; white-space: nowrap; text-align: center;">
+                    <a href="{{ route('admin.reports.index') }}" class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger);">
                         <i class="fas fa-redo"></i> Clear
                     </a>
                 </div>
                 
                 <!-- Export Buttons Group -->
-                <div style="display: flex; gap: 8px; flex: 1.5; min-width: 300px; justify-content: flex-end;">
+                <div class="btn-group" style="flex: 1.5; min-width: 300px; justify-content: flex-end; flex-direction: row !important;">
                     @php $hasData = isset($report_data); @endphp
-                    <button type="button" onclick="{{ $hasData ? 'openPrintView()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                    <button type="button" onclick="{{ $hasData ? 'openPrintView()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
                         <i class="fas fa-print"></i> Print
                     </button>
-                    <button type="button" onclick="{{ $hasData ? 'exportToPDF()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                    <button type="button" onclick="{{ $hasData ? 'exportToPDF()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
                         <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
                     </button>
-                    <button type="button" onclick="{{ $hasData ? 'exportToExcel()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; font-size: 13px; white-space: nowrap;">
+                    <button type="button" onclick="{{ $hasData ? 'exportToExcel()' : 'alert(\'Please search and generate a report first!\')' }}" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
                         <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
                     </button>
                 </div>
-            </div>
             </div>
         </form>
     </div>

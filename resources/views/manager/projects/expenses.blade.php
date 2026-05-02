@@ -110,10 +110,10 @@
                     <input type="file" name="bill_image" class="form-control" accept="image/*">
                 </div>
                 
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn btn-outline" onclick="closeExpenseModal()" style="flex: 1;">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 2;">Save Transaction</button>
-                </div>
+                <div class="btn-group" style="margin-top: 24px;">
+                <button type="button" class="btn btn-outline" onclick="closeExpenseModal()" style="flex: 1;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 2;">Save Transaction</button>
+            </div>
             </form>
         </div>
     </div>

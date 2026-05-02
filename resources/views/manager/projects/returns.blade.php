@@ -115,12 +115,12 @@
             </div>
             <form method="POST" action="{{ route('manager.returns.storeGlobal') }}">
                 @csrf
-                <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px;">
+                <div class="responsive-grid">
                     <!-- Left Column -->
                     <div>
                         <div class="form-group" style="margin-bottom: 24px;">
                             <label class="form-label" style="font-size: 14px;">Select Project</label>
-                            <select id="project_select" name="project_id" class="form-control" required style="background: rgba(0,0,0,0.8); height: 44px; font-size: 14px;" onchange="updateBalance()">
+                            <select id="project_select" name="project_id" class="form-control" required style="background: rgba(0,0,0,0.8);" onchange="updateBalance()">
                                 <option value="">-- Choose a Project --</option>
                                 @foreach($projects as $p)
                                     <option value="{{ $p->id }}">{{ $p->project_name }}</option>
@@ -135,21 +135,21 @@
 
                         <div class="form-group" style="margin-bottom: 24px;">
                             <label class="form-label" style="font-size: 14px;">Return Amount (Tk.)</label>
-                            <input type="number" step="0.01" id="return_amount" name="amount" class="form-control" required readonly style="background: rgba(255,255,255,0.05); color: var(--accent-yellow); font-weight: 700; height: 44px; font-size: 16px;">
+                            <input type="number" step="0.01" id="return_amount" name="amount" class="form-control" required readonly style="background: rgba(255,255,255,0.05); color: var(--accent-yellow); font-weight: 700;">
                         </div>
                     </div>
 
                     <!-- Right Column -->
                     <div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="responsive-grid" style="gap: 24px;">
                             <div class="form-group" style="margin-bottom: 24px;">
                                 <label class="form-label" style="font-size: 14px;">Return Date</label>
-                                <input type="date" name="return_date" class="form-control" required value="{{ date('Y-m-d') }}" style="height: 44px; font-size: 14px;">
+                                <input type="date" name="return_date" class="form-control" required value="{{ date('Y-m-d') }}">
                             </div>
 
                             <div class="form-group" style="margin-bottom: 24px;">
                                 <label class="form-label" style="font-size: 14px;">Payment Method</label>
-                                <select name="payment_method" class="form-control" required style="background: rgba(0,0,0,0.8); height: 44px; font-size: 14px;">
+                                <select name="payment_method" class="form-control" required style="background: rgba(0,0,0,0.8);">
                                     <option value="cash">Cash</option>
                                     <option value="bank_transfer">Bank Transfer</option>
                                     <option value="mobile_banking">Mobile Banking</option>
@@ -172,14 +172,12 @@
                             <textarea name="note" class="form-control" rows="1" style="background: rgba(0,0,0,0.5); height: 44px; padding: 10px; font-size: 14px;" placeholder="Briefly describe the fund return..."></textarea>
                         </div>
 
-                        <div style="margin-top: 12px;">
-                            <button type="submit" id="submit_btn" class="btn btn-primary" style="width: 100%; background: var(--accent-yellow); color: #000; height: 48px; font-weight: 700; font-size: 16px; border-radius: 10px; transition: all 0.3s ease;" disabled>Select Project to Proceed</button>
-                        </div>
                     </div>
                 </div>
                 
-                <div style="margin-top: 32px; display: flex; justify-content: flex-end; gap: 20px;">
-                    <button type="button" onclick="closeReturnModal()" class="btn btn-outline" style="padding: 12px 40px; font-weight: 600;">Cancel & Close</button>
+                <div class="btn-group" style="margin-top: 32px;">
+                    <button type="button" onclick="closeReturnModal()" class="btn btn-outline" style="flex: 1;">Cancel</button>
+                    <button type="submit" id="submit_btn" class="btn btn-primary" style="flex: 2;" disabled>Record Return</button>
                 </div>
             </form>
         </div>

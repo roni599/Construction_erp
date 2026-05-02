@@ -80,7 +80,14 @@
                     <textarea name="description" class="form-control" rows="3">{{ $project->description }}</textarea>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Update Project</button>
+            <div class="btn-group" style="margin-top: 32px;">
+                <button type="submit" class="btn btn-primary" style="flex: 2;">
+                    <i class="fas fa-save"></i> Update Project
+                </button>
+                <a href="{{ route('admin.projects.show', $project->id) }}" class="btn btn-outline" style="flex: 1;">
+                    Cancel
+                </a>
+            </div>
         </form>
     </div>
 @endsection

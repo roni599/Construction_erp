@@ -3,7 +3,7 @@
 @section('title', 'Employees')
 
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+    <div class="flex-between" style="margin-bottom: 32px;">
         <h2 style="margin: 0;">Project Manager Management</h2>
         <button class="btn btn-primary" onclick="document.getElementById('createEmployeeForm').style.display='block'" style="display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-plus"></i> Add Project Manager
@@ -74,7 +74,14 @@
                     @error('password') <span style="color: var(--danger); font-size: 12px;">{{ $message }}</span> @enderror
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Save Project Manager</button>
+            <div class="btn-group" style="margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 2;">
+                    <i class="fas fa-save"></i> Save Project Manager
+                </button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('createEmployeeForm').style.display='none'">
+                    Cancel
+                </button>
+            </div>
         </form>
     </div>
 

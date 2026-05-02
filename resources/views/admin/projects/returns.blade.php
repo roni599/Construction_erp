@@ -54,7 +54,10 @@
                     <option value="mobile_banking">Mobile Banking</option>
                 </select>
             </div>
-            <button type="submit" id="submit_btn" class="btn btn-primary" style="width:100%; background: var(--accent-blue);" disabled>Select Project First</button>
+            <div class="btn-group" style="margin-top: 24px;">
+                <button type="submit" id="submit_btn" class="btn btn-primary" style="flex: 2; background: var(--accent-blue);" disabled>Select Project First</button>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+            </div>
         </form>
     </div>
 

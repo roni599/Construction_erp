@@ -112,6 +112,8 @@ Route::middleware('auth')->group(function () {
         Route::post('projects-returns', [ProjectWebController::class, 'managerStoreGlobalReturn'])->name('returns.storeGlobal');
         Route::get('funds', [ProjectWebController::class, 'managerFunds'])->name('funds.index');
         Route::get('expenses', [ProjectWebController::class, 'managerExpenses'])->name('expenses.index');
+        Route::get('expenses/create', [ProjectWebController::class, 'managerCreateGlobalExpense'])->name('expenses.create');
+        Route::post('expenses/store', [ProjectWebController::class, 'managerStoreGlobalExpense'])->name('expenses.storeGlobal');
 
         // Expense Categories
         Route::get('categories', [ExpenseCategoryWebController::class, 'index'])->name('categories.index');

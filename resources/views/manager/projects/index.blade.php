@@ -14,8 +14,8 @@
         }
 
         .table-wrapper {
-            overflow: visible !important;
-            padding-bottom: 100px;
+            overflow-x: auto !important;
+            padding-bottom: 40px;
         }
 
         /* Ensure dropdowns never trigger a height change */
@@ -72,7 +72,7 @@
                                     <a class="dropdown-item" href="{{ route('manager.projects.ledger', $project->id) }}">
                                         <i class="fas fa-file-invoice"></i> Ledger
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('manager.projects.show', $project->id) }}">
+                                    <a class="dropdown-item" href="{{ route('manager.expenses.create', ['project_id' => $project->id]) }}">
                                         <i class="fas fa-plus-circle"></i> Record Expense
                                     </a>
                                 </div>

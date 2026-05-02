@@ -16,47 +16,53 @@
 
     <!-- Filters -->
     <div class="glass-panel no-print" style="margin-bottom: 24px; padding: 20px;">
-        <form method="GET" action="{{ route('admin.reports.client_receive') }}" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
-            <div class="form-group" style="margin: 0;">
-                <label class="form-label">Project</label>
-                <select name="project_id" class="form-control" style="background: rgba(0,0,0,0.8);">
-                    <option value="">All Projects</option>
-                    @foreach($projects as $p)
-                        <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>
-                            {{ $p->project_name }}
-                        </option>
-                    @endforeach
-                </select>
+        <form method="GET" action="{{ route('admin.reports.client_receive') }}">
+            <div class="dashboard-grid" style="margin-bottom: 24px;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Project</label>
+                    <select name="project_id" class="form-control" style="background: rgba(0,0,0,0.8);">
+                        <option value="">All Projects</option>
+                        @foreach($projects as $p)
+                            <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>
+                                {{ $p->project_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Invoice No</label>
+                    <input type="text" name="invoice_no" class="form-control" placeholder="Search..." value="{{ request('invoice_no') }}">
+                </div>
             </div>
-            <div class="form-group" style="margin: 0;">
-                <label class="form-label">From Date</label>
-                <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+
+            <div class="btn-group" style="flex-wrap: wrap; flex-direction: row !important; justify-content: space-between;">
+                <div class="btn-group" style="flex: 1; min-width: 200px; flex-direction: row !important;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fas fa-search"></i> Filter</button>
+                    <a href="{{ route('admin.reports.client_receive') }}" class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger);">Clear</a>
+                </div>
+
+                @if(count($report_data) > 0)
+                <div class="btn-group" style="flex: 1.5; min-width: 300px; justify-content: flex-end; flex-direction: row !important;">
+                    <a href="{{ route('admin.reports.print', array_merge(request()->query(), ['report_type' => 'client_received'])) }}" target="_blank" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
+                        <i class="fas fa-print"></i> Print
+                    </a>
+                    <button type="button" onclick="exportToPDF()" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
+                        <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
+                    </button>
+                    <button type="button" onclick="exportToExcel()" class="btn btn-outline" style="flex: 1; font-size: 13px; padding: 8px 12px !important;">
+                        <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
+                    </button>
+                </div>
+                @endif
             </div>
-            <div class="form-group" style="margin: 0;">
-                <label class="form-label">To Date</label>
-                <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
-            </div>
-            <div class="form-group" style="margin: 0;">
-                <label class="form-label">Invoice No</label>
-                <input type="text" name="invoice_no" class="form-control" placeholder="Search..." value="{{ request('invoice_no') }}">
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Filter</button>
-                <a href="{{ route('admin.reports.client_receive') }}" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);">Clear</a>
-            </div>
-            @if(count($report_data) > 0)
-            <div style="display: flex; gap: 10px;">
-                <a href="{{ route('admin.reports.print', array_merge(request()->query(), ['report_type' => 'client_received'])) }}" target="_blank" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-print"></i> Print
-                </a>
-                <button type="button" onclick="exportToPDF()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
-                </button>
-                <button type="button" onclick="exportToExcel()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
-                </button>
-            </div>
-            @endif
         </form>
     </div>
 

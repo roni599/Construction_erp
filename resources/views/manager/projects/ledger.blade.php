@@ -3,6 +3,10 @@
 @section('title', 'Project Ledger: ' . $project->project_name)
 
 @section('content')
+    <!-- External Libraries for Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <div class="flex-between" style="margin-bottom: 32px;">
         <div>
             <h2>Project Ledger: {{ $project->project_name }}</h2>
@@ -50,6 +54,17 @@
             <div style="display: flex; gap: 8px; flex-shrink: 0;">
                 <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-search"></i> Search</button>
                 <a href="{{ route('manager.projects.ledger', $project->id) }}" class="btn btn-outline" style="white-space: nowrap;">Clear</a>
+            </div>
+            <div style="display: flex; gap: 10px; margin-left: auto;">
+                <button type="button" onclick="window.print()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button type="button" onclick="exportLedgerToPDF()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-file-pdf" style="color: #e74c3c;"></i> PDF
+                </button>
+                <button type="button" onclick="exportLedgerToExcel()" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-file-excel" style="color: #27ae60;"></i> Excel
+                </button>
             </div>
         </form>
     </div>
@@ -134,4 +149,33 @@
             </table>
         </div>
     </div>
+    <script>
+        function exportLedgerToExcel() {
+            const table = document.querySelector('.table');
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Project_Ledger");
+            XLSX.writeFile(wb, "Project_Ledger_{{ $project->project_name }}.xlsx");
+        }
+
+        function exportLedgerToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            doc.text("Project Ledger: {{ $project->project_name }}", 14, 15);
+            doc.setFontSize(10);
+            doc.text("Client: {{ $project->client_name }}", 14, 22);
+            doc.text("Date: " + new Date().toLocaleDateString(), 14, 28);
+
+            doc.autoTable({
+                html: '.table',
+                startY: 35,
+                theme: 'grid',
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+            });
+
+            doc.save("Project_Ledger_{{ $project->project_name }}.pdf");
+        }
+    </script>
 @endsection

@@ -665,6 +665,67 @@ class ProjectWebController extends Controller
         return view('manager.projects.returns', compact('projects', 'balances', 'admins', 'returns'));
     }
 
+    public function managerCreateGlobalExpense(Request $request)
+    {
+        $projects = Project::where('employee_id', $request->user()->employee_id)->get();
+        $categories = ExpenseCategory::where('is_active', true)->get();
+        
+        $selectedProject = null;
+        $summary = null;
+        if ($request->filled('project_id')) {
+            $selectedProject = Project::where('id', $request->project_id)
+                ->where('employee_id', $request->user()->employee_id)
+                ->first();
+            if ($selectedProject) {
+                $summary = $this->financialService->getProjectSummary($selectedProject);
+            }
+        }
+
+        return view('manager.projects.create_expense', compact('projects', 'categories', 'selectedProject', 'summary'));
+    }
+
+    public function managerStoreGlobalExpense(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:1',
+            'expense_date' => 'required|date',
+            'bill_image' => 'nullable|image|max:5120'
+        ]);
+
+        $project = Project::where('id', $request->project_id)
+            ->where('employee_id', $request->user()->employee_id)
+            ->firstOrFail();
+
+        $summary = $this->financialService->getProjectSummary($project);
+        if ($request->amount > $summary['manager_cash_balance']) {
+            return back()->with('error', 'Insufficient hand cash for ' . $project->project_name . '! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('bill_image')) {
+            $imagePath = $request->file('bill_image')->store('receipts', 'public');
+        }
+
+        $today = date('Ymd');
+        $count = Expense::whereDate('created_at', today())->count() + 1;
+        $invoiceNo = 'EXP-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+
+        Expense::create([
+            'project_id' => $project->id,
+            'employee_id' => $project->employee_id,
+            'expense_category_id' => $request->expense_category_id,
+            'amount' => $request->amount,
+            'expense_date' => $request->expense_date,
+            'description' => $request->description,
+            'bill_image' => $imagePath,
+            'invoice_no' => $invoiceNo
+        ]);
+
+        return redirect()->route('manager.projects.index')->with('success', 'Expense recorded successfully for ' . $project->project_name);
+    }
+
     public function managerStoreGlobalReturn(Request $request)
     {
         $request->validate([
