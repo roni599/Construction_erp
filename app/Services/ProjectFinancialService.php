@@ -145,7 +145,7 @@ class ProjectFinancialService
             });
 
         // Combine all transactions and sort by date ascending
-        $ledger = collect([])->concat($payments)->concat($funds)->concat($expenses)->concat($returns)->sortBy('date')->values();
+        $ledger = collect([])->concat($payments)->concat($funds)->concat($expenses)->concat($returns)->sortByDesc('date')->values();
 
         return $ledger;
     }

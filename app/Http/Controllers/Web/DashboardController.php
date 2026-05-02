@@ -27,7 +27,7 @@ class DashboardController extends Controller
             $query->where('employee_id', $request->employee_id);
         }
 
-        $projects = $query->get();
+        $projects = $query->orderBy('created_at', 'desc')->get();
         $totalProjects = $projects->count();
         $activeProjects = $projects->whereIn('status', ['running', 'pending'])->count();
         
@@ -116,8 +116,8 @@ class DashboardController extends Controller
             $query->where('id', $request->project_id);
         }
 
-        $allMyProjects = Project::where('employee_id', $employeeId)->orderBy('project_name')->get();
-        $projects = $query->get();
+        $allMyProjects = Project::where('employee_id', $employeeId)->orderBy('project_name', 'asc')->get();
+        $projects = $query->orderBy('created_at', 'desc')->get();
         $assignedProjectsCount = $projects->count();
         
         $totalReceived = 0;

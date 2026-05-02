@@ -17,7 +17,7 @@ class ExpenseCategoryWebController extends Controller
             $query->where('employee_id', $employeeId);
         }]);
 
-        $categories = ($perPage === 'all') ? $query->get() : $query->paginate($perPage);
+        $categories = ($perPage === 'all') ? $query->orderBy('created_at', 'desc')->get() : $query->orderBy('created_at', 'desc')->paginate($perPage);
         return view('manager.categories.index', compact('categories'));
     }
 

@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
         Route::get('all-returns', [ProjectWebController::class, 'adminAllReturns'])->name('projects.all_returns');
         Route::get('expenses/{id}/edit', [ProjectWebController::class, 'editExpense'])->name('expenses.edit');
         Route::put('expenses/{id}', [ProjectWebController::class, 'updateExpense'])->name('expenses.update');
+        Route::delete('expenses/{id}', [ProjectWebController::class, 'destroyExpense'])->name('expenses.destroy');
         
         Route::get('projects-funds', [ProjectWebController::class, 'createGlobalFund'])->name('projects.funds.create');
         Route::post('projects-funds', [ProjectWebController::class, 'storeGlobalFund'])->name('projects.funds.storeGlobal');

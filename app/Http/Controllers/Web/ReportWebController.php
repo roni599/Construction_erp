@@ -234,7 +234,7 @@ class ReportWebController extends Controller
             $transactions = $transactions->concat($returns);
         }
 
-        $report_data = $transactions->sortBy('date')->values();
+        $report_data = $transactions->sortByDesc('date')->values();
         $selected_project = $project;
         $filters = $request->all();
         $projects = Project::all();
@@ -428,7 +428,7 @@ class ReportWebController extends Controller
         return [
             'project' => $project,
             'selected_project' => $project,
-            'report_data' => $transactions->sortBy('date')->values(),
+            'report_data' => $transactions->sortByDesc('date')->values(),
             'projects' => Project::all()
         ];
     }
@@ -526,7 +526,7 @@ class ReportWebController extends Controller
         return [
             'project' => $project,
             'selected_project' => $project,
-            'report_data' => $transactions->sortBy('date')->values(),
+            'report_data' => $transactions->sortByDesc('date')->values(),
             'projects' => Project::where('employee_id', $employeeId)->get()
         ];
     }

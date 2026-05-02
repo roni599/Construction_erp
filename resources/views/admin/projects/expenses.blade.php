@@ -47,7 +47,7 @@
                         <th>Description</th>
                         <th style="text-align: right;">Amount</th>
                         <th style="text-align: center;">Receipt</th>
-                        <th style="text-align: center;">Invoice</th>
+                        <th style="text-align: center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,10 +77,21 @@
                                     <span style="color: var(--text-secondary);">-</span>
                                 @endif
                             </td>
-                            <td style="text-align: center;">
-                                <a href="{{ route('shared.expenses.invoice', $expense->id) }}" target="_blank" class="btn btn-outline" style="padding: 4px 8px; font-size: 12px; border-color: var(--accent-blue); color: var(--accent-blue);">
-                                    <i class="fas fa-file-invoice"></i> PDF
-                                </a>
+                            <td>
+                                <div class="dropdown" style="text-align: center;">
+                                    <button class="dropdown-toggle" type="button">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{{ route('shared.expenses.invoice', $expense->id) }}" target="_blank">
+                                            <i class="fas fa-file-invoice"></i> View Invoice
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="confirmExpenseDelete('{{ route('admin.expenses.destroy', $expense->id) }}')" style="color: var(--danger);">
+                                             <i class="fas fa-trash-alt"></i> Delete
+                                         </a>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -94,12 +105,26 @@
                         <tr>
                             <th colspan="4" style="text-align: right; font-size: 16px;">Total Expenses:</th>
                             <th style="color: var(--danger); text-align: right; font-size: 16px;">Tk. {{ number_format($totalExpenses, 2) }}</th>
-                            <th></th>
-                            <th></th>
+                            <th colspan="2"></th>
                         </tr>
                     </tfoot>
                 @endif
             </table>
         </div>
     </div>
+
+    <form id="deleteExpenseForm" method="POST" action="" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <script>
+        function confirmExpenseDelete(url) {
+            if (confirm('Are you sure you want to delete this expense? This action will return the amount to the project balance and cannot be undone.')) {
+                const form = document.getElementById('deleteExpenseForm');
+                form.action = url;
+                form.submit();
+            }
+        }
+    </script>
 @endsection

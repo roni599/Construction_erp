@@ -14,7 +14,8 @@ class EmployeeWebController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $employees = ($perPage === 'all') ? Employee::with('user')->get() : Employee::with('user')->paginate($perPage);
+        $query = Employee::with('user')->orderBy('created_at', 'desc');
+        $employees = ($perPage === 'all') ? $query->get() : $query->paginate($perPage);
         return view('admin.employees.index', compact('employees'));
     }
 

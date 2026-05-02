@@ -146,6 +146,10 @@
                                         <a class="dropdown-item" href="{{ route('shared.expenses.invoice', $expense->id) }}" target="_blank">
                                             <i class="fas fa-file-invoice"></i> Invoice
                                         </a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="confirmExpenseDelete('{{ route('admin.expenses.destroy', $expense->id) }}')" style="color: var(--danger);">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </a>
                                     </div>
                                 </div>
                             </td>
@@ -175,6 +179,11 @@
         {{ $expenses->appends(request()->query())->links() }}
     </div>
 
+    <form id="deleteExpenseForm" method="POST" action="" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <script>
         function toggleEditModal() {
             const modal = document.getElementById('editExpenseModal');
@@ -201,6 +210,14 @@
             document.getElementById('edit-description').value = expense.description || '';
             
             toggleEditModal();
+        }
+
+        function confirmExpenseDelete(url) {
+            if (confirm('Are you sure you want to delete this expense? This action will return the amount to the project balance and cannot be undone.')) {
+                const form = document.getElementById('deleteExpenseForm');
+                form.action = url;
+                form.submit();
+            }
         }
     </script>
 @endsection

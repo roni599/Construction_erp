@@ -98,8 +98,8 @@ class ProjectWebController extends Controller
             });
         }
 
-        $expenses = $query->latest('expense_date')->paginate($request->per_page ?? 15);
-        $projects = Project::all();
+        $expenses = $query->latest('expense_date')->orderBy('id', 'desc')->paginate($request->per_page ?? 15);
+        $projects = Project::orderBy('project_name', 'asc')->get();
 
         return view('admin.projects.all_expenses', compact('expenses', 'projects'));
     }
@@ -124,8 +124,8 @@ class ProjectWebController extends Controller
             });
         }
 
-        $returns = $query->latest('return_date')->paginate($request->per_page ?? 15);
-        $projects = Project::all();
+        $returns = $query->latest('return_date')->orderBy('id', 'desc')->paginate($request->per_page ?? 15);
+        $projects = Project::orderBy('project_name', 'asc')->get();
 
         return view('admin.projects.all_returns', compact('returns', 'projects'));
     }
@@ -509,7 +509,8 @@ class ProjectWebController extends Controller
     public function managerIndex(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $projects = ($perPage === 'all') ? Project::where('employee_id', $request->user()->employee_id)->get() : Project::where('employee_id', $request->user()->employee_id)->paginate($perPage);
+        $query = Project::where('employee_id', $request->user()->employee_id)->orderBy('created_at', 'desc');
+        $projects = ($perPage === 'all') ? $query->get() : $query->paginate($perPage);
         return view('manager.projects.index', compact('projects'));
     }
 
@@ -842,8 +843,8 @@ class ProjectWebController extends Controller
             });
         }
 
-        $funds = $query->latest('fund_date')->paginate($request->per_page ?? 10);
-        $projects = Project::where('employee_id', auth()->user()->employee_id)->get();
+        $funds = $query->latest('fund_date')->orderBy('id', 'desc')->paginate($request->per_page ?? 10);
+        $projects = Project::where('employee_id', auth()->user()->employee_id)->orderBy('project_name', 'asc')->get();
 
         if ($request->ajax()) {
             return view('manager.projects.funds_table', compact('funds'))->render();
@@ -873,9 +874,9 @@ class ProjectWebController extends Controller
             });
         }
 
-        $expenses = $query->latest('expense_date')->paginate($request->per_page ?? 10);
-        $projectsRaw = Project::where('employee_id', auth()->user()->employee_id)->get();
-        $categories = \App\Models\ExpenseCategory::all();
+        $expenses = $query->latest('expense_date')->orderBy('id', 'desc')->paginate($request->per_page ?? 10);
+        $projectsRaw = Project::where('employee_id', auth()->user()->employee_id)->orderBy('project_name', 'asc')->get();
+        $categories = \App\Models\ExpenseCategory::orderBy('name', 'asc')->get();
 
         $projects = $projectsRaw->map(function($project) {
             $summary = $this->financialService->getProjectSummary($project);
@@ -928,5 +929,16 @@ class ProjectWebController extends Controller
 
         $project->delete();
         return redirect()->route('admin.projects.index')->with('success', 'Project deleted successfully.');
+    }
+
+    public function destroyExpense($id)
+    {
+        $expense = \App\Models\Expense::findOrFail($id);
+        $projectName = $expense->project->project_name;
+        $amount = $expense->amount;
+        
+        $expense->delete();
+
+        return back()->with('success', "Expense of Tk. " . number_format($amount, 2) . " for project '{$projectName}' has been deleted. Project balance has been updated.");
     }
 }
