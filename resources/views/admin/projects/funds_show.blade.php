@@ -7,17 +7,17 @@
         <div>
             <h2>Disbursement Details</h2>
         </div>
-        <div style="display: flex; gap: 12px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <a href="{{ route('admin.projects.funds.invoice', $fund->id) }}" target="_blank" class="btn btn-primary"><i class="fas fa-print"></i> Print Advice</a>
             <a href="{{ route('admin.projects.funds.edit', $fund->id) }}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
             <a href="{{ route('admin.projects.funds.create') }}" class="btn btn-outline">&larr; Back</a>
         </div>
     </div>
 
-    <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
         <div class="glass-panel">
             <h3>Disbursement Information</h3>
-            <table class="table" style="margin-top: 16px;">
+            <table class="table" style="margin-top: 16px; min-width: auto;">
                 <tr>
                     <td style="color: var(--text-secondary);">Invoice Number</td>
                     <td>
@@ -28,11 +28,11 @@
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Project</td>
-                    <td><strong>{{ $fund->project->project_name }}</strong></td>
+                    <td class="text-nowrap"><strong>{{ $fund->project->project_name }}</strong></td>
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Manager</td>
-                    <td>{{ $fund->employee->name }}</td>
+                    <td class="text-nowrap">{{ $fund->employee->name }}</td>
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Amount</td>
@@ -51,7 +51,7 @@
 
         <div class="glass-panel">
             <h3>System Details</h3>
-            <table class="table" style="margin-top: 16px;">
+            <table class="table" style="margin-top: 16px; min-width: auto;">
                 <tr>
                     <td style="color: var(--text-secondary);">Given By</td>
                     <td>{{ $fund->givenBy->name ?? 'Unknown' }}</td>

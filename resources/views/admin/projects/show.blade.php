@@ -38,7 +38,7 @@
                 <p><strong>Email:</strong> {{ $project->manager->email ?? 'not set' }}</p>
                 <p><strong>Address:</strong> {{ $project->manager->address ?? 'not set' }}</p>
             @endif
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; gap: 16px; margin-top: 16px;">
                 <div>
                     <p><strong>Total P&L:</strong> <br><span style="color: {{ $summary['profit_loss'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['profit_loss'], 2) }}</span></p>
                     <p style="margin-top: 12px;"><strong>Total Client Payments:</strong> <br>Tk. {{ number_format($summary['total_client_payments'], 2) }}</p>

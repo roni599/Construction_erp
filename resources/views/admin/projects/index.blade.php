@@ -68,7 +68,7 @@
                 @forelse($projects as $project)
                     <tr>
                         <td>
-                            <a href="{{ route('admin.projects.show', $project->id) }}" style="color: inherit; text-decoration: none; display: block;">
+                            <a href="{{ route('admin.projects.show', $project->id) }}" class="text-nowrap" style="color: inherit; text-decoration: none; display: block;">
                                 <strong>{{ $project->project_name }}</strong>
                                 @if($project->location)
                                     <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
@@ -77,11 +77,11 @@
                                 @endif
                             </a>
                         </td>
-                        <td>{{ $project->client_name }}</td>
+                        <td class="text-nowrap">{{ $project->client_name }}</td>
                         <td>{{ $project->client_phone ?? '-' }}</td>
                         <td>{{ $project->client_email ?? '-' }}</td>
                         <td>Tk. {{ number_format($project->estimated_budget, 2) }}</td>
-                        <td style="font-size: 14px;">
+                        <td class="text-nowrap" style="font-size: 14px;">
                             {{ $project->manager->name ?? 'Unassigned' }}
                             @if(isset($project->manager->phone))
                                 <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">{{ $project->manager->phone }}</div>

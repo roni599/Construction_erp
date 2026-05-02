@@ -13,7 +13,7 @@
 
     <!-- Record Fund Modal -->
     <div id="fundFormModal" class="sidebar-overlay" style="display: {{ $errors->any() ? 'flex' : 'none' }}; align-items: flex-start; justify-content: center; padding-top: 50px; z-index: 2000;">
-        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 650px; padding: 32px; position: relative;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleForm()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -21,7 +21,7 @@
                 <h3 style="margin: 0;">Disburse Fund to Manager</h3>
             </div>
             
-            <form method="POST" action="{{ route('admin.projects.funds.storeGlobal') }}">
+            <form method="POST" action="{{ route('admin.projects.funds.storeGlobal') }}" onsubmit="return validateFundAmount()">
                 @csrf
                 <div class="form-group">
                     <label class="form-label">Select Project</label>
@@ -38,7 +38,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Amount (Tk.)</label>
-                    <input type="number" step="any" name="amount" id="fund_amount" class="form-control" required value="{{ old('amount') }}" onwheel="this.blur()" autocomplete="off">
+                    <input type="number" step="any" name="amount" id="fund_amount" class="form-control" required value="{{ old('amount') }}" onwheel="this.blur()" autocomplete="off" oninput="validateFundAmount()">
                     <small id="amount_error" style="color: var(--danger); display: none; margin-top: 4px;">Amount cannot exceed estimated budget.</small>
                 </div>
                 <div class="form-group">
@@ -63,7 +63,7 @@
 
     <!-- Edit Fund Modal -->
     <div id="editFundModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; padding-top: 50px; z-index: 2000;">
-        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 650px; padding: 32px; position: relative;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleEditModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -72,9 +72,12 @@
                 <p id="edit-invoice-no" style="margin: 4px 0 0; font-size: 14px; color: var(--accent-yellow); font-family: monospace;"></p>
             </div>
             
-            <form id="editFundForm" method="POST" action="">
+            <form id="editFundForm" method="POST" action="" onsubmit="return validateEditAmount()">
                 @csrf
                 @method('PUT')
+                <input type="hidden" id="edit-budget-val" value="0">
+                <input type="hidden" id="edit-other-disbursed-val" value="0">
+
                 <div class="form-group">
                     <label class="form-label">Project</label>
                     <select name="project_id" id="edit-project-id" class="form-control" required style="background: rgba(0,0,0,0.8);">
@@ -85,7 +88,9 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Amount (Tk.)</label>
-                    <input type="number" step="0.01" name="amount" id="edit-amount" class="form-control" required>
+                    <input type="number" step="0.01" name="amount" id="edit-amount" class="form-control" required oninput="validateEditAmount()">
+                    <small id="edit_amount_error" style="color: var(--danger); display: none; margin-top: 4px;"></small>
+
                 </div>
                 <div class="form-group">
                     <label class="form-label">Fund Date</label>

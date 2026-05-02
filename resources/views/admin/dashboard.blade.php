@@ -105,12 +105,12 @@
             <tbody>
                 @forelse($summaries as $summary)
                     <tr>
-                        <td style="padding: 10px 8px;">
+                        <td class="text-nowrap" style="padding: 10px 8px;">
                             <a href="{{ route('admin.projects.show', $summary['project_id']) }}" style="color: inherit; text-decoration: none;">
                                 <strong>{{ $summary['project_name'] }}</strong>
                             </a>
                         </td>
-                        <td style="padding: 10px 8px;">{{ $summary['manager_name'] }}</td>
+                        <td class="text-nowrap" style="padding: 10px 8px;">{{ $summary['manager_name'] }}</td>
                         <td style="text-align: right; padding: 10px 8px;">{{ number_format($summary['estimated_budget'], 0) }}</td>
                         <td style="text-align: right; padding: 10px 8px;">{{ number_format($summary['total_client_payments'], 0) }}</td>
                         <td style="text-align: right; padding: 10px 8px;">{{ number_format($summary['total_manager_funds'], 0) }}</td>

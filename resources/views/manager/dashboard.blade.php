@@ -90,8 +90,8 @@
                         <tr>
                             <td>
                                 <a href="{{ route('manager.projects.show', $project->id) }}" style="color: inherit; text-decoration: none;">
-                                    <div style="font-weight: 600; color: var(--accent-blue);">{{ $project->project_name }}</div>
-                                    <div style="font-size: 11px; color: var(--text-secondary);">{{ $project->client_name }}</div>
+                                    <div class="text-nowrap" style="font-weight: 600; color: var(--accent-blue);">{{ $project->project_name }}</div>
+                                    <div class="text-nowrap" style="font-size: 11px; color: var(--text-secondary);">{{ $project->client_name }}</div>
                                 </a>
                             </td>
                             <td style="text-align: right; color: var(--accent-blue);">Tk. {{ number_format($project->summary['total_manager_funds'], 2) }}</td>

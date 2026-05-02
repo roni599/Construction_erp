@@ -7,17 +7,17 @@
         <div>
             <h2>Payment Details</h2>
         </div>
-        <div style="display: flex; gap: 12px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <a href="{{ route('admin.projects.payments.invoice', $payment->id) }}" target="_blank" class="btn btn-primary"><i class="fas fa-print"></i> Print Invoice</a>
             <a href="{{ route('admin.projects.payments.edit', $payment->id) }}" class="btn btn-outline"><i class="fas fa-edit"></i> Edit</a>
             <a href="{{ route('admin.projects.payments.create') }}" class="btn btn-outline">&larr; Back</a>
         </div>
     </div>
 
-    <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
         <div class="glass-panel">
             <h3>Transaction Information</h3>
-            <table class="table" style="margin-top: 16px;">
+            <table class="table" style="margin-top: 16px; min-width: auto;">
                 <tr>
                     <td style="color: var(--text-secondary);">Invoice No</td>
                     <td>
@@ -28,11 +28,11 @@
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Project</td>
-                    <td><strong>{{ $payment->project->project_name }}</strong></td>
+                    <td class="text-nowrap"><strong>{{ $payment->project->project_name }}</strong></td>
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Client</td>
-                    <td>{{ $payment->project->client_name }}</td>
+                    <td class="text-nowrap">{{ $payment->project->client_name }}</td>
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Amount</td>
@@ -51,10 +51,10 @@
 
         <div class="glass-panel">
             <h3>System Details</h3>
-            <table class="table" style="margin-top: 16px;">
+            <table class="table" style="margin-top: 16px; min-width: auto;">
                 <tr>
                     <td style="color: var(--text-secondary);">Recorded By</td>
-                    <td>{{ $payment->recordedBy->name }}</td>
+                    <td class="text-nowrap">{{ $payment->recordedBy->name }}</td>
                 </tr>
                 <tr>
                     <td style="color: var(--text-secondary);">Created At</td>

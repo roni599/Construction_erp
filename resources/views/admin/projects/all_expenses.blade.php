@@ -11,7 +11,7 @@
 
     <!-- Edit Expense Modal -->
     <div id="editExpenseModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+        <div class="glass-panel" style="width: 100%; max-width: 650px; padding: 32px; position: relative;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleEditModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -111,7 +111,7 @@
                                 </a>
                             </td>
                             <td>
-                                <a href="{{ route('admin.projects.show', $expense->project_id) }}" style="color: var(--accent-blue); text-decoration: none;">
+                                <a href="{{ route('admin.projects.show', $expense->project_id) }}" class="text-nowrap" style="color: var(--accent-blue); text-decoration: none;">
                                     <strong>{{ $expense->project->project_name ?? 'Deleted Project' }}</strong>
                                 </a>
                             </td>
