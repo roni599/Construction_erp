@@ -100,14 +100,24 @@ class DashboardController extends Controller
         if (!$employeeId) {
             return view('manager.dashboard', [
                 'projects' => collect(),
+                'allMyProjects' => collect(),
                 'totalReceived' => 0,
                 'totalExpenses' => 0,
+                'totalReturns' => 0,
                 'balance' => 0,
+                'assignedProjectsCount' => 0,
                 'error' => 'No employee record linked to your user account.'
             ]);
         }
 
-        $projects = Project::where('employee_id', $employeeId)->get();
+        $query = Project::where('employee_id', $employeeId);
+
+        if ($request->filled('project_id')) {
+            $query->where('id', $request->project_id);
+        }
+
+        $allMyProjects = Project::where('employee_id', $employeeId)->orderBy('project_name')->get();
+        $projects = $query->get();
         $assignedProjectsCount = $projects->count();
         
         $totalReceived = 0;
@@ -117,12 +127,13 @@ class DashboardController extends Controller
 
         foreach ($projects as $project) {
             $summary = $this->financialService->getProjectSummary($project);
+            $project->summary = $summary;
             $totalReceived += $summary['total_manager_funds'];
             $totalExpenses += $summary['total_expenses'];
             $totalReturns += $summary['total_manager_returns'];
             $balance += $summary['manager_cash_balance'];
         }
 
-        return view('manager.dashboard', compact('projects', 'assignedProjectsCount', 'totalReceived', 'totalExpenses', 'totalReturns', 'balance'));
+        return view('manager.dashboard', compact('projects', 'allMyProjects', 'assignedProjectsCount', 'totalReceived', 'totalExpenses', 'totalReturns', 'balance'));
     }
 }
