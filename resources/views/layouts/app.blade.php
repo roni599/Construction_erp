@@ -257,7 +257,7 @@
                                 <i class="fas fa-list" style="font-size: 14px; width: 20px;"></i> <span>My All Projects</span>
                             </a>
                             <a href="{{ route('manager.funds.index') }}" class="nav-item {{ request()->routeIs('manager.funds.*') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
-                                <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Fund Receive</span>
+                                <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Fund Receive List</span>
                             </a>
                             <a href="{{ route('manager.expenses.index') }}" class="nav-item {{ request()->routeIs('manager.expenses.*') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-file-invoice-dollar" style="font-size: 14px; width: 20px;"></i> <span>Fund Expense List</span>
@@ -374,28 +374,6 @@
     </div>
 
     <script>
-        // Toastr Configuration
-        toastr.options = {
-            "closeButton": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-            "timeOut": "3000"
-        };
-
-        @if(session('success'))
-            toastr.success("{{ session('success') }}");
-        @endif
-
-        @if(session('error'))
-            toastr.error("{{ session('error') }}");
-        @endif
-
-        @if($errors->any())
-            @foreach($errors->all() as $error)
-                toastr.error("{{ $error }}");
-            @endforeach
-        @endif
-
         document.getElementById('sidebar-toggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.add('active');
             document.getElementById('sidebar-overlay').classList.add('active');
@@ -688,6 +666,35 @@
                 }
             });
         }
+
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "5000"
+        };
+
+        @if(Session::has('success'))
+            toastr.success("{{ Session::get('success') }}");
+        @endif
+
+        @if(Session::has('error'))
+            toastr.error("{{ Session::get('error') }}");
+        @endif
+
+        @if(Session::has('info'))
+            toastr.info("{{ Session::get('info') }}");
+        @endif
+
+        @if(Session::has('warning'))
+            toastr.warning("{{ Session::get('warning') }}");
+        @endif
+
+        @if($errors->any())
+            @foreach($errors->all() as $error)
+                toastr.error("{{ $error }}");
+            @endforeach
+        @endif
     </script>
     @yield('scripts')
 </body>

@@ -3,6 +3,19 @@
 @section('title', 'Project Ledger: ' . $project->project_name)
 
 @section('content')
+    <style>
+        @media print {
+            .table-wrapper { overflow: visible !important; }
+            .table { border-collapse: collapse !important; width: 100% !important; }
+            .table thead { display: table-header-group !important; }
+            .table tfoot { display: table-row-group !important; }
+            .table tr { page-break-inside: avoid !important; }
+            .table td, .table th { page-break-inside: avoid !important; border: 1px solid #ddd !important; }
+            .no-print, .btn, .glass-panel:has(form), form { display: none !important; }
+            .main-content { padding: 0 !important; }
+            .glass-panel { border: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
+        }
+    </style>
     <div class="flex-between" style="margin-bottom: 32px;">
         <div>
             <h2 style="margin: 0; margin-bottom: 4px;">Project: <span style="color: var(--accent-blue);">{{ $project->project_name }}</span></h2>

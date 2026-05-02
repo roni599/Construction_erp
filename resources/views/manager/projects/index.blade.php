@@ -72,9 +72,11 @@
                                     <a class="dropdown-item" href="{{ route('manager.projects.ledger', $project->id) }}">
                                         <i class="fas fa-file-invoice"></i> Ledger
                                     </a>
+                                    @if($project->status === 'running')
                                     <a class="dropdown-item" href="{{ route('manager.expenses.create', ['project_id' => $project->id]) }}">
                                         <i class="fas fa-plus-circle"></i> Record Expense
                                     </a>
+                                    @endif
                                 </div>
                             </div>
                         </td>

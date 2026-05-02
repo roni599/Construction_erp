@@ -226,6 +226,11 @@ class ProjectWebController extends Controller
     public function storePayment(Request $request, $id)
     {
         $project = Project::findOrFail($id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Payments can only be recorded for active (running) projects.');
+        }
+
         $totalReceived = \App\Models\ClientPayment::where('project_id', $id)->sum('amount');
         $remaining = $project->estimated_budget - $totalReceived;
         
@@ -247,6 +252,11 @@ class ProjectWebController extends Controller
     public function storeFund(Request $request, $id)
     {
         $project = Project::findOrFail($id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Funds can only be disbursed to active (running) projects.');
+        }
+
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'fund_date' => 'required|date',
@@ -378,6 +388,11 @@ class ProjectWebController extends Controller
     public function storeGlobalFund(Request $request)
     {
         $project = Project::findOrFail($request->project_id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Funds can only be disbursed to active (running) projects.');
+        }
+
         $totalDisbursed = ManagerFund::where('project_id', $project->id)->sum('amount');
         $remaining = $project->estimated_budget - $totalDisbursed;
 
@@ -698,6 +713,10 @@ class ProjectWebController extends Controller
             ->where('employee_id', $request->user()->employee_id)
             ->firstOrFail();
 
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
+
         $summary = $this->financialService->getProjectSummary($project);
         if ($request->amount > $summary['manager_cash_balance']) {
             return back()->with('error', 'Insufficient hand cash for ' . $project->project_name . '! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
@@ -790,6 +809,10 @@ class ProjectWebController extends Controller
     public function managerStoreExpense(Request $request, $id)
     {
         $project = Project::where('id', $id)->where('employee_id', $request->user()->employee_id)->firstOrFail();
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
         
         $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
