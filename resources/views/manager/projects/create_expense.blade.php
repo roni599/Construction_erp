@@ -18,10 +18,10 @@
                 <div class="form-group">
                     <label class="form-label">Select Project <span style="color: var(--danger);">*</span></label>
                     <select name="project_id" id="project_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
-                        <option value="">-- Choose Project --</option>
-                        @foreach($projects as $p)
-                            <option value="{{ $p->id }}" {{ ($selectedProject && $selectedProject->id == $p->id) ? 'selected' : '' }}>
-                                {{ $p->project_name }}
+                        <option value="">-- Select Project --</option>
+                        @foreach($projects->where('status', 'running') as $p)
+                            <option value="{{ $p->id }}" {{ (isset($selectedProject) && $selectedProject->id == $p->id) || old('project_id') == $p->id ? 'selected' : '' }}>
+                                {{ $p->project_name }} ({{ $p->client_name }})
                             </option>
                         @endforeach
                     </select>

@@ -23,10 +23,10 @@
 
         <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <div style="display: grid; grid-template-columns: 350px 1fr; gap: 32px;">
+            <div class="profile-layout">
             
             <!-- Left: Profile Overview Card -->
-            <div class="glass-panel" style="padding: 80px 40px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <div class="glass-panel profile-card" style="padding: 80px 40px; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
                 <div style="position: relative; display: inline-block; margin-bottom: 30px;">
                     <div style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden; border: 4px solid var(--accent-blue); box-shadow: 0 0 25px rgba(0, 123, 255, 0.25); background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                         @if($user->image)
@@ -79,7 +79,7 @@
                             <h4 style="margin: 0; font-size: 15px;">Profile & Business Identity</h4>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                        <div class="settings-grid-2" style="margin-bottom: 15px;">
                             <div class="form-group">
                                 <label class="form-label" style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Full Name</label>
                                 <div style="position: relative;">
@@ -165,7 +165,7 @@
 
             <form action="{{ route('admin.profile.password') }}" method="POST">
                 @csrf
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                <div class="security-grid">
                     <div class="form-group">
                         <label class="form-label">New Password</label>
                         <div style="position: relative;">
@@ -202,6 +202,45 @@
         .form-control:focus {
             border-color: var(--accent-blue) !important;
             box-shadow: 0 0 15px rgba(0, 123, 255, 0.1) !important;
+        }
+
+        /* Responsive Layouts */
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 32px;
+        }
+
+        .settings-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+            .profile-card {
+                padding: 40px 20px !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .settings-grid-2, .security-grid {
+                grid-template-columns: 1fr;
+            }
+            .flex-between {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
         }
     </style>
 

@@ -100,12 +100,14 @@
                                     <a class="dropdown-item" href="{{ route('admin.projects.edit', $project->id) }}">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
+                                    @if($project->status === 'running')
                                     <a class="dropdown-item" href="javascript:void(0)" onclick="openPaymentModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->clientPayments()->sum('amount'), 2, '.', '') }})">
                                         <i class="fas fa-money-bill-wave"></i> Client Payment
                                     </a>
                                     <a class="dropdown-item" href="javascript:void(0)" onclick="openFundModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', '{{ addslashes($project->manager->name ?? 'Unassigned') }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->managerFunds()->sum('amount'), 2, '.', '') }})">
                                         <i class="fas fa-hand-holding-usd"></i> Disburse Fund
                                     </a>
+                                    @endif
                                     <form id="delete-project-{{ $project->id }}" action="{{ route('admin.projects.destroy', $project->id) }}" method="POST" style="display: none;">
                                         @csrf
                                         @method('DELETE')
@@ -131,8 +133,8 @@
     </div>
 
     <!-- Record Client Payment Modal -->
-    <div id="paymentFormModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+    <div id="paymentFormModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000;">
+        <div class="glass-panel animate-slide-up-custom" style="width: 100%; max-width: 500px; padding: 32px; position: relative; margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="togglePaymentModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -178,8 +180,8 @@
     </div>
 
     <!-- Disburse Fund Modal -->
-    <div id="fundFormModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 500px; padding: 32px; position: relative;">
+    <div id="fundFormModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000;">
+        <div class="glass-panel animate-slide-up-custom" style="width: 100%; max-width: 500px; padding: 32px; position: relative; margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleFundModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -224,6 +226,16 @@
             </form>
         </div>
     </div>
+
+    <style>
+        @keyframes slideUpCustom {
+            from { transform: translateY(100vh); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up-custom {
+            animation: slideUpCustom 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
 
     <script>
         function togglePaymentModal() {

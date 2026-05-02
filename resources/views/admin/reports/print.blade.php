@@ -24,8 +24,13 @@
         @media print {
             body { padding: 0; }
             .no-print { display: none; }
+            .report-table { page-break-after: auto; }
+            .report-table thead { display: table-header-group !important; }
+            .report-table tr { page-break-inside: avoid !important; page-break-after: auto; }
+            .report-table td, .report-table th { page-break-inside: avoid !important; }
             .report-table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; color: black !important; }
             .footer-row td { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: #f2f2f2 !important; }
+            tfoot { display: table-row-group !important; }
         }
     </style>
 </head>
@@ -58,29 +63,28 @@
         $titleText = $typeLabels[$type] ?? 'Financial Report';
     @endphp
 
-    <table class="report-table" style="margin-bottom: 0; border-bottom: none;">
-        <tbody>
+    <table class="report-table">
+        <thead>
             <tr>
-                <th style="background-color: #f8f9fa; color: #000; font-size: 20px; padding: 12px; text-transform: uppercase; border: 1px solid #000;">{{ $titleText }}</th>
+                <th colspan="{{ $colCount }}" style="background-color: #f8f9fa; color: #000; font-size: 20px; padding: 12px; text-transform: uppercase; border: 1px solid #000;">{{ $titleText }}</th>
             </tr>
             <tr>
-                <td style="padding: 8px; border: 1px solid #000; font-weight: bold;">
+                <th colspan="{{ $colCount }}" style="padding: 8px; border: 1px solid #000; font-weight: bold; background: white; color: black; text-align: left;">
                     Project: {{ $project ? $project->project_name : 'All Projects' }}
-                </td>
+                </th>
             </tr>
             @if(isset($filters['from_date']) || isset($filters['to_date']))
             <tr>
-                <td style="padding: 8px; border: 1px solid #000;">Period: {{ $filters['from_date'] ?: 'Start' }} to {{ $filters['to_date'] ?: 'End' }}</td>
+                <th colspan="{{ $colCount }}" style="padding: 8px; border: 1px solid #000; background: white; color: black; text-align: left; font-weight: normal;">
+                    Period: {{ $filters['from_date'] ?: 'Start' }} to {{ $filters['to_date'] ?: 'End' }}
+                </th>
             </tr>
             @endif
             <tr>
-                <td style="padding: 8px; border: 1px solid #000;">Print Date: {{ date('Y-m-d') }}</td>
+                <th colspan="{{ $colCount }}" style="padding: 8px; border: 1px solid #000; background: white; color: black; text-align: left; font-weight: normal;">
+                    Print Date: {{ date('Y-m-d') }}
+                </th>
             </tr>
-        </tbody>
-    </table>
-
-    <table class="report-table" style="margin-top: 0;">
-        <thead>
             <tr>
                 <th style="width: 10%;">Date</th>
                 <th style="width: 10%;">Invoice</th>

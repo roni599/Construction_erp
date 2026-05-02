@@ -7,6 +7,12 @@
         <h2 style="margin: 0;">Dashboard Overview</h2>
     </div>
 
+    <style>
+        @media print {
+            tfoot { display: table-row-group !important; }
+        }
+    </style>
+
     <div class="dashboard-grid" style="gap: 16px; margin-bottom: 24px;">
         <div class="glass-panel stat-card" style="padding: 16px;" data-stat-type="total-projects">
             <span class="stat-title" style="font-size: 12px;">Total Projects</span>

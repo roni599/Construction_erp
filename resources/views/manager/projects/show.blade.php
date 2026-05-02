@@ -37,9 +37,11 @@
                 <div class="flex-between" style="margin-bottom: 16px;">
                     <h3 style="margin: 0;">Unified Project Ledger</h3>
                     <div style="display: flex; gap: 8px;">
+                        @if($project->status === 'running')
                         <a href="{{ route('manager.expenses.create', ['project_id' => $project->id]) }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-plus-circle"></i> Record Expense
                         </a>
+                        @endif
                         <a href="{{ route('manager.returns.create', ['project_id' => $project->id]) }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 13px; border-color: var(--accent-yellow); color: var(--accent-yellow); display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-undo"></i> Return Cash
                         </a>

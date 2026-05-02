@@ -226,6 +226,11 @@ class ProjectWebController extends Controller
     public function storePayment(Request $request, $id)
     {
         $project = Project::findOrFail($id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Payments can only be recorded for active (running) projects.');
+        }
+
         $totalReceived = \App\Models\ClientPayment::where('project_id', $id)->sum('amount');
         $remaining = $project->estimated_budget - $totalReceived;
         
@@ -247,6 +252,11 @@ class ProjectWebController extends Controller
     public function storeFund(Request $request, $id)
     {
         $project = Project::findOrFail($id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Funds can only be disbursed to active (running) projects.');
+        }
+
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'fund_date' => 'required|date',
@@ -378,6 +388,11 @@ class ProjectWebController extends Controller
     public function storeGlobalFund(Request $request)
     {
         $project = Project::findOrFail($request->project_id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Funds can only be disbursed to active (running) projects.');
+        }
+
         $totalDisbursed = ManagerFund::where('project_id', $project->id)->sum('amount');
         $remaining = $project->estimated_budget - $totalDisbursed;
 
@@ -613,10 +628,6 @@ class ProjectWebController extends Controller
             'amount.size' => 'The return amount must be exactly equal to your current hand cash balance (Tk. ' . number_format($currentBalance, 2) . ').'
         ]);
 
-        $today = date('Ymd');
-        $count = ManagerReturn::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'FR-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         ManagerReturn::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -624,7 +635,6 @@ class ProjectWebController extends Controller
             'return_date' => $request->return_date,
             'payment_method' => $request->payment_method,
             'received_by' => $request->received_by,
-            'invoice_no' => $invoiceNo,
             'note' => $request->note ?? 'Manager initiated return'
         ]);
 
@@ -699,6 +709,10 @@ class ProjectWebController extends Controller
             ->where('employee_id', $request->user()->employee_id)
             ->firstOrFail();
 
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
+
         $summary = $this->financialService->getProjectSummary($project);
         if ($request->amount > $summary['manager_cash_balance']) {
             return back()->with('error', 'Insufficient hand cash for ' . $project->project_name . '! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
@@ -709,10 +723,6 @@ class ProjectWebController extends Controller
             $imagePath = $request->file('bill_image')->store('receipts', 'public');
         }
 
-        $today = date('Ymd');
-        $count = Expense::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'EXP-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         Expense::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -721,7 +731,6 @@ class ProjectWebController extends Controller
             'expense_date' => $request->expense_date,
             'description' => $request->description,
             'bill_image' => $imagePath,
-            'invoice_no' => $invoiceNo
         ]);
 
         return redirect()->route('manager.projects.index')->with('success', 'Expense recorded successfully for ' . $project->project_name);
@@ -752,10 +761,6 @@ class ProjectWebController extends Controller
             'amount.size' => 'The return amount must be exactly equal to your current hand cash balance (Tk. ' . number_format($currentBalance, 2) . ').'
         ]);
 
-        $today = date('Ymd');
-        $count = ManagerReturn::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'FR-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         ManagerReturn::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -763,7 +768,6 @@ class ProjectWebController extends Controller
             'return_date' => $request->return_date,
             'payment_method' => $request->payment_method,
             'received_by' => $request->received_by,
-            'invoice_no' => $invoiceNo,
             'note' => $request->note ?? 'Manager initiated return'
         ]);
 
@@ -791,6 +795,10 @@ class ProjectWebController extends Controller
     public function managerStoreExpense(Request $request, $id)
     {
         $project = Project::where('id', $id)->where('employee_id', $request->user()->employee_id)->firstOrFail();
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
         
         $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
