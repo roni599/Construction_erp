@@ -627,10 +627,6 @@ class ProjectWebController extends Controller
             'amount.size' => 'The return amount must be exactly equal to your current hand cash balance (Tk. ' . number_format($currentBalance, 2) . ').'
         ]);
 
-        $today = date('Ymd');
-        $count = ManagerReturn::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'FR-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         ManagerReturn::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -638,7 +634,6 @@ class ProjectWebController extends Controller
             'return_date' => $request->return_date,
             'payment_method' => $request->payment_method,
             'received_by' => $request->received_by,
-            'invoice_no' => $invoiceNo,
             'note' => $request->note ?? 'Manager initiated return'
         ]);
 
@@ -727,10 +722,6 @@ class ProjectWebController extends Controller
             $imagePath = $request->file('bill_image')->store('receipts', 'public');
         }
 
-        $today = date('Ymd');
-        $count = Expense::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'EXP-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         Expense::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -739,7 +730,6 @@ class ProjectWebController extends Controller
             'expense_date' => $request->expense_date,
             'description' => $request->description,
             'bill_image' => $imagePath,
-            'invoice_no' => $invoiceNo
         ]);
 
         return redirect()->route('manager.projects.index')->with('success', 'Expense recorded successfully for ' . $project->project_name);
@@ -770,10 +760,6 @@ class ProjectWebController extends Controller
             'amount.size' => 'The return amount must be exactly equal to your current hand cash balance (Tk. ' . number_format($currentBalance, 2) . ').'
         ]);
 
-        $today = date('Ymd');
-        $count = ManagerReturn::whereDate('created_at', today())->count() + 1;
-        $invoiceNo = 'FR-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-
         ManagerReturn::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
@@ -781,7 +767,6 @@ class ProjectWebController extends Controller
             'return_date' => $request->return_date,
             'payment_method' => $request->payment_method,
             'received_by' => $request->received_by,
-            'invoice_no' => $invoiceNo,
             'note' => $request->note ?? 'Manager initiated return'
         ]);
 
