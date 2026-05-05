@@ -247,6 +247,9 @@
                             <a href="{{ route('admin.reports.project_expense') }}" class="nav-item {{ request()->routeIs('admin.reports.project_expense') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-file-invoice-dollar" style="font-size: 14px; width: 20px;"></i> <span>Project Expense</span>
                             </a>
+                            <a href="{{ route('admin.reports.project_breakdown') }}" class="nav-item {{ request()->routeIs('admin.reports.project_breakdown') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
+                                <i class="fas fa-layer-group" style="font-size: 14px; width: 20px;"></i> <span>Project Breakdown</span>
+                            </a>
                         </div>
                     </div>
 
