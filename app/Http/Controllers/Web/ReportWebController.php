@@ -56,7 +56,8 @@ class ReportWebController extends Controller
                 'credit' => round($item->amount),
                 'debit' => 0,
                 'amount' => round($item->amount),
-                'raw_date' => $item->payment_date->format('Y-m-d')
+                'raw_date' => $item->payment_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.payments.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($payments);
@@ -83,7 +84,8 @@ class ReportWebController extends Controller
                 'credit' => 0,
                 'debit' => round($item->amount),
                 'amount' => round($item->amount),
-                'raw_date' => $item->fund_date->format('Y-m-d')
+                'raw_date' => $item->fund_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.funds.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($funds);
@@ -110,7 +112,8 @@ class ReportWebController extends Controller
                 'credit' => 0,
                 'debit' => round($item->amount),
                 'amount' => round($item->amount),
-                'raw_date' => $item->expense_date->format('Y-m-d')
+                'raw_date' => $item->expense_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.expenses.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($expenses);
@@ -137,7 +140,8 @@ class ReportWebController extends Controller
                 'credit' => round($item->amount),
                 'debit' => 0,
                 'amount' => round($item->amount),
-                'raw_date' => $item->return_date->format('Y-m-d')
+                'raw_date' => $item->return_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.returns.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($returns);
@@ -182,7 +186,8 @@ class ReportWebController extends Controller
                 'credit' => round($item->amount),
                 'debit' => 0,
                 'amount' => round($item->amount),
-                'raw_date' => $item->payment_date->format('Y-m-d')
+                'raw_date' => $item->payment_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.payments.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($payments);
@@ -209,7 +214,8 @@ class ReportWebController extends Controller
                 'credit' => 0,
                 'debit' => round($item->amount),
                 'amount' => round($item->amount),
-                'raw_date' => $item->fund_date->format('Y-m-d')
+                'raw_date' => $item->fund_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.funds.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($funds);
@@ -236,7 +242,8 @@ class ReportWebController extends Controller
                 'credit' => 0,
                 'debit' => round($item->amount),
                 'amount' => round($item->amount),
-                'raw_date' => $item->expense_date->format('Y-m-d')
+                'raw_date' => $item->expense_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.expenses.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($expenses);
@@ -263,7 +270,8 @@ class ReportWebController extends Controller
                 'credit' => round($item->amount),
                 'debit' => 0,
                 'amount' => round($item->amount),
-                'raw_date' => $item->return_date->format('Y-m-d')
+                'raw_date' => $item->return_date->format('Y-m-d'),
+                'invoice_url' => route('admin.projects.returns.invoice', $item->id)
             ];
         });
         $transactions = $transactions->concat($returns);

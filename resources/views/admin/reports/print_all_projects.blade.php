@@ -90,7 +90,11 @@
                 <td class="text-center">{{ $sl++ }}</td>
                 <td class="text-center">{{ \Carbon\Carbon::parse($data['date'])->format('Y-m-d') }}</td>
                 <td class="text-center">{{ $data['project_name'] }}</td>
-                <td class="text-center" style="font-family: monospace;">{{ $data['invoice_no'] }}</td>
+                <td class="text-center" style="font-family: monospace;">
+                    <a href="{{ $data['invoice_url'] }}" target="_blank" style="color: #3498db; text-decoration: none; font-weight: bold;">
+                        {{ $data['invoice_no'] }}
+                    </a>
+                </td>
                 <td>
                     <div>{{ $data['description'] }}</div>
                     <div class="recorded-by">Recorded By: {{ $data['recorded_by'] }}</div>
