@@ -87,6 +87,8 @@ Route::middleware('auth')->group(function () {
 
         // Reports
         Route::get('reports', [ReportWebController::class, 'index'])->name('reports.index');
+        Route::get('reports/all-projects', [ReportWebController::class, 'allProjects'])->name('reports.all_projects');
+        Route::get('reports/all-projects/print', [ReportWebController::class, 'allProjectsPrint'])->name('reports.all_projects.print');
         Route::get('reports/client-receive', [ReportWebController::class, 'clientReceive'])->name('reports.client_receive');
         Route::get('reports/fund-transferred', [ReportWebController::class, 'fundTransferred'])->name('reports.fund_transferred');
         Route::get('reports/fund-returned', [ReportWebController::class, 'fundReturned'])->name('reports.fund_returned');

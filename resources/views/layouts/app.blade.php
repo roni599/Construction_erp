@@ -232,6 +232,9 @@
                             <a href="{{ route('admin.reports.index') }}" class="nav-item {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-file-alt" style="font-size: 14px; width: 20px;"></i> <span>Financial Summary</span>
                             </a>
+                            <a href="{{ route('admin.reports.all_projects') }}" class="nav-item {{ request()->routeIs('admin.reports.all_projects') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
+                                <i class="fas fa-list-ul" style="font-size: 14px; width: 20px;"></i> <span>All Projects</span>
+                            </a>
                             <a href="{{ route('admin.reports.client_receive') }}" class="nav-item {{ request()->routeIs('admin.reports.client_receive') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Client Receive</span>
                             </a>

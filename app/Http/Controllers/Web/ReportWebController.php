@@ -24,6 +24,261 @@ class ReportWebController extends Controller
         return view('admin.reports.index', compact('projects'));
     }
 
+    public function allProjects(Request $request)
+    {
+        $projects = Project::all();
+        $transactions = collect();
+        
+        $from = $request->from_date;
+        $to = $request->to_date;
+        $invoiceNo = $request->invoice_no;
+        $projectId = $request->project_id;
+
+        // 1. Client Payments
+        $query = ClientPayment::with(['project', 'recordedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('payment_date', '>=', $from);
+        if ($to) $query->where('payment_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $payments = $query->get()->map(function($item) {
+            return [
+                'type' => 'Client Payment',
+                'date' => $item->payment_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->description ?? 'Client Payment',
+                'recorded_by' => ($item->recordedBy && $item->recordedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->recordedBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'PAY-'.$item->id,
+                'status' => 'approved',
+                'credit' => round($item->amount),
+                'debit' => 0,
+                'amount' => round($item->amount),
+                'raw_date' => $item->payment_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($payments);
+
+        // 2. Fund Transferred PM
+        $query = ManagerFund::with(['project', 'givenBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('fund_date', '>=', $from);
+        if ($to) $query->where('fund_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $funds = $query->get()->map(function($item) {
+            return [
+                'type' => 'Fund Disbursed',
+                'date' => $item->fund_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->note ?? 'Fund Disbursed to Manager',
+                'recorded_by' => ($item->givenBy && $item->givenBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->givenBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'FND-'.$item->id,
+                'status' => 'approved',
+                'credit' => 0,
+                'debit' => round($item->amount),
+                'amount' => round($item->amount),
+                'raw_date' => $item->fund_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($funds);
+
+        // 3. Expenses
+        $query = Expense::with(['project', 'recordedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('expense_date', '>=', $from);
+        if ($to) $query->where('expense_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $expenses = $query->get()->map(function($item) {
+            return [
+                'type' => 'Expense',
+                'date' => $item->expense_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->description ?? 'Project Expense',
+                'recorded_by' => ($item->recordedBy && $item->recordedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->recordedBy->name ?? 'PM') . ')',
+                'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
+                'status' => $item->status,
+                'credit' => 0,
+                'debit' => round($item->amount),
+                'amount' => round($item->amount),
+                'raw_date' => $item->expense_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($expenses);
+
+        // 4. Fund Returned
+        $query = \App\Models\ManagerReturn::with(['project', 'receivedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('return_date', '>=', $from);
+        if ($to) $query->where('return_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $returns = $query->get()->map(function($item) {
+            return [
+                'type' => 'Fund Returned',
+                'date' => $item->return_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->note ?? 'Fund Returned to Admin',
+                'recorded_by' => ($item->receivedBy && $item->receivedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->receivedBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'RET-'.$item->id,
+                'status' => 'approved',
+                'credit' => round($item->amount),
+                'debit' => 0,
+                'amount' => round($item->amount),
+                'raw_date' => $item->return_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($returns);
+
+        $report_data = $transactions->sortByDesc('date')->values();
+        
+        $totalCredit = $report_data->where('type', 'Client Payment')->sum('credit');
+        $totalDebit = $report_data->where('type', 'Expense')->reject(function($item) { return $item['status'] === 'rejected'; })->sum('debit');
+
+        return view('admin.reports.all_projects', compact('projects', 'report_data', 'totalCredit', 'totalDebit'));
+    }
+
+    public function allProjectsPrint(Request $request)
+    {
+        $projects = Project::all();
+        $transactions = collect();
+        
+        $from = $request->from_date;
+        $to = $request->to_date;
+        $invoiceNo = $request->invoice_no;
+        $projectId = $request->project_id;
+
+        // 1. Client Payments
+        $query = ClientPayment::with(['project', 'recordedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('payment_date', '>=', $from);
+        if ($to) $query->where('payment_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $payments = $query->get()->map(function($item) {
+            return [
+                'type' => 'Client Payment',
+                'date' => $item->payment_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->description ?? 'Client Payment',
+                'recorded_by' => ($item->recordedBy && $item->recordedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->recordedBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'PAY-'.$item->id,
+                'status' => 'approved',
+                'credit' => round($item->amount),
+                'debit' => 0,
+                'amount' => round($item->amount),
+                'raw_date' => $item->payment_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($payments);
+
+        // 2. Fund Transferred PM
+        $query = ManagerFund::with(['project', 'givenBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('fund_date', '>=', $from);
+        if ($to) $query->where('fund_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $funds = $query->get()->map(function($item) {
+            return [
+                'type' => 'Fund Disbursed',
+                'date' => $item->fund_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->note ?? 'Fund Disbursed to Manager',
+                'recorded_by' => ($item->givenBy && $item->givenBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->givenBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'FND-'.$item->id,
+                'status' => 'approved',
+                'credit' => 0,
+                'debit' => round($item->amount),
+                'amount' => round($item->amount),
+                'raw_date' => $item->fund_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($funds);
+
+        // 3. Expenses
+        $query = Expense::with(['project', 'recordedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('expense_date', '>=', $from);
+        if ($to) $query->where('expense_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $expenses = $query->get()->map(function($item) {
+            return [
+                'type' => 'Expense',
+                'date' => $item->expense_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->description ?? 'Project Expense',
+                'recorded_by' => ($item->recordedBy && $item->recordedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->recordedBy->name ?? 'PM') . ')',
+                'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
+                'status' => $item->status,
+                'credit' => 0,
+                'debit' => round($item->amount),
+                'amount' => round($item->amount),
+                'raw_date' => $item->expense_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($expenses);
+
+        // 4. Fund Returned
+        $query = \App\Models\ManagerReturn::with(['project', 'receivedBy']);
+        if ($projectId) $query->where('project_id', $projectId);
+        if ($from) $query->where('return_date', '>=', $from);
+        if ($to) $query->where('return_date', '<=', $to);
+        if ($invoiceNo) {
+            $query->where(function($q) use ($invoiceNo) {
+                $q->where('invoice_no', 'like', "%{$invoiceNo}%")->orWhere('id', $invoiceNo);
+            });
+        }
+        $returns = $query->get()->map(function($item) {
+            return [
+                'type' => 'Fund Returned',
+                'date' => $item->return_date,
+                'project_name' => $item->project->project_name ?? 'N/A',
+                'description' => $item->note ?? 'Fund Returned to Admin',
+                'recorded_by' => ($item->receivedBy && $item->receivedBy->role === 'admin' ? 'admin' : 'PM') . '(' . ($item->receivedBy->name ?? 'Admin') . ')',
+                'invoice_no' => $item->invoice_no ?? 'RET-'.$item->id,
+                'status' => 'approved',
+                'credit' => round($item->amount),
+                'debit' => 0,
+                'amount' => round($item->amount),
+                'raw_date' => $item->return_date->format('Y-m-d')
+            ];
+        });
+        $transactions = $transactions->concat($returns);
+
+        $report_data = $transactions->sortByDesc('date')->values();
+        
+        $totalCredit = $report_data->where('type', 'Client Payment')->sum('credit');
+        $totalDebit = $report_data->where('type', 'Expense')->reject(function($item) { return $item['status'] === 'rejected'; })->sum('debit');
+
+        $selectedProject = $projectId ? Project::with('manager')->find($projectId) : null;
+        $printedBy = auth()->user()->name;
+
+        return view('admin.reports.print_all_projects', compact('projects', 'report_data', 'totalCredit', 'totalDebit', 'selectedProject', 'printedBy'));
+    }
+
     public function clientReceive(Request $request)
     {
         $projects = Project::all();
