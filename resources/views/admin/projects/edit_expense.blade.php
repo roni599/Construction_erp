@@ -6,7 +6,7 @@
     <div class="flex-between" style="margin-bottom: 32px;">
         <div>
             <h2>Edit Expense: <span style="color: var(--accent-yellow);">{{ $expense->invoice_no }}</span></h2>
-            <p style="color: var(--text-secondary);">Project: {{ $expense->project->project_name }}</p>
+            <p style="color: var(--text-secondary);">Project: {{ $expense->project->project_name }} | Recorded By: @if($expense->recordedBy) <strong>{{ $expense->recordedBy->role === 'admin' ? 'Admin' : 'PM' }}:</strong> {{ $expense->recordedBy->name }} @else Auto-Assigned @endif</p>
         </div>
         <a href="{{ route('admin.projects.all_expenses') }}" class="btn btn-outline">&larr; Back to List</a>
     </div>

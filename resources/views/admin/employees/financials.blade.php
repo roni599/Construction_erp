@@ -80,8 +80,9 @@
                         <th>Type</th>
                         <th>Project</th>
                         <th>Description</th>
-                        <th style="text-align: right;">Credit (In)</th>
-                        <th style="text-align: right;">Debit (Out)</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: right; white-space: nowrap;">Credit (In)</th>
+                        <th style="text-align: right; white-space: nowrap;">Debit (Out)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,16 +109,30 @@
                             <td style="font-size: 13px; color: var(--text-secondary);">
                                 <span style="color: var(--text-primary); font-weight: 500;">[{{ $item->type }}]</span> {{ $item->description }}
                             </td>
-                            <td style="text-align: right; font-weight: 600; color: var(--success);">
+                            <td style="text-align: center;">
+                                <span class="badge" style="
+                                    padding: 4px 10px; font-size: 11px; font-weight: 600;
+                                    @if($item->status === 'approved')
+                                        background: rgba(40, 167, 69, 0.1); color: var(--success); border: 1px solid var(--success);
+                                    @elseif($item->status === 'rejected')
+                                        background: rgba(220, 53, 69, 0.1); color: var(--danger); border: 1px solid var(--danger);
+                                    @else
+                                        background: rgba(255, 193, 7, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
+                                    @endif
+                                ">
+                                    {{ ucfirst($item->status) }}
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-weight: 600; color: var(--success); white-space: nowrap;">
                                 @if($item->direction === 'in')
-                                    Tk. {{ number_format($item->amount, 2) }}
+                                    Tk.{{ number_format($item->amount, 2) }}
                                 @else
                                     <span style="color: var(--text-secondary); opacity: 0.3;">-</span>
                                 @endif
                             </td>
-                            <td style="text-align: right; font-weight: 600; color: var(--danger);">
+                            <td style="text-align: right; font-weight: 600; color: var(--danger); white-space: nowrap; {{ $item->status === 'rejected' ? 'text-decoration: line-through; opacity: 0.6;' : '' }}">
                                 @if($item->direction === 'out')
-                                    Tk. {{ number_format($item->amount, 2) }}
+                                    Tk.{{ number_format($item->amount, 2) }}
                                 @else
                                     <span style="color: var(--text-secondary); opacity: 0.3;">-</span>
                                 @endif
@@ -125,7 +140,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 32px; color: var(--text-secondary);">
+                            <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-secondary);">
                                 No financial transactions found for this project manager.
                             </td>
                         </tr>
@@ -133,7 +148,7 @@
                 </tbody>
                 <tfoot>
                     <tr style="background: rgba(255,255,255,0.03); font-weight: bold; border-top: 2px solid var(--border-color);">
-                        <td colspan="5" style="text-align: right; padding: 12px 16px;">Total Summary:</td>
+                        <td colspan="6" style="text-align: right; padding: 12px 16px;">Total Summary:</td>
                         <td style="text-align: right; color: var(--success); padding: 12px 16px; border-bottom: 3px double var(--border-color);">
                             Tk. {{ number_format($totalFunds, 2) }}
                         </td>
@@ -142,7 +157,7 @@
                         </td>
                     </tr>
                     <tr style="background: rgba(255,255,255,0.05); font-weight: 800;">
-                        <td colspan="5" style="text-align: right; padding: 12px 16px;">Current Cash in Hand:</td>
+                        <td colspan="6" style="text-align: right; padding: 12px 16px;">Current Cash in Hand:</td>
                         <td colspan="2" style="text-align: center; color: {{ $balance >= 0 ? 'var(--success)' : 'var(--danger)' }}; padding: 12px 16px; font-size: 16px;">
                             Tk. {{ number_format($balance, 2) }}
                         </td>

@@ -41,6 +41,16 @@
                     <label class="form-label">Invoice No</label>
                     <input type="text" name="invoice_no" class="form-control" placeholder="Search..." value="{{ request('invoice_no') }}">
                 </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Show Records</label>
+                    <select name="per_page" class="form-control" style="background: rgba(0,0,0,0.8);" onchange="this.form.submit()">
+                        <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10 Per Page</option>
+                        <option value="20" {{ request('per_page') == '20' ? 'selected' : '' }}>20 Per Page</option>
+                        <option value="30" {{ request('per_page') == '30' ? 'selected' : '' }}>30 Per Page</option>
+                        <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 Per Page</option>
+                        <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>All Records</option>
+                    </select>
+                </div>
             </div>
 
             <div class="btn-group" style="flex-wrap: wrap; flex-direction: row !important; justify-content: space-between;">
@@ -104,13 +114,14 @@
                         <th>Project Name</th>
                         <th>Category</th>
                         <th>Description</th>
+                        <th style="text-align: center;">Status</th>
                         <th style="text-align: right;">Amount (Tk.)</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $total = 0; @endphp
                     @forelse($report_data as $data)
-                        @php $total += $data->amount; @endphp
+                        @php $total += ($data->status === 'approved' ? $data->amount : 0); @endphp
                         <tr>
                             <td>{{ $data->expense_date->format('Y-m-d') }}</td>
                             <td style="font-family: monospace;">
@@ -124,25 +135,40 @@
                                     {{ $data->category->name }}
                                 </span>
                             </td>
-                            <td>{{ $data->description ?? 'N/A' }}</td>
-                            <td style="text-align: right; color: var(--danger); font-weight: bold;">Tk. {{ number_format($data->amount, 2) }}</td>
+                            <td>
+                                {{ $data->description ?? 'N/A' }}
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                                    <i class="fas fa-user-edit" style="font-size: 10px;"></i> Recorded By: {{ $data->recordedBy->name ?? 'N/A' }}
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="badge" style="background: {{ $data->status === 'approved' ? 'rgba(40, 167, 69, 0.1)' : ($data->status === 'rejected' ? 'rgba(220, 53, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)') }}; color: {{ $data->status === 'approved' ? 'var(--success)' : ($data->status === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }}; border: 1px solid {{ $data->status === 'approved' ? 'var(--success)' : ($data->status === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }};">
+                                    {{ ucfirst($data->status) }}
+                                </span>
+                            </td>
+                            <td style="text-align: right; color: var(--danger); font-weight: bold; white-space: nowrap; {{ $data->status === 'rejected' ? 'text-decoration: line-through; opacity: 0.6;' : '' }}">Tk.{{ number_format($data->amount, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 40px;">No data found for the selected filters.</td>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 40px;">No data found for the selected filters.</td>
                         </tr>
                     @endforelse
                 </tbody>
                 @if(count($report_data) > 0)
                 <tfoot>
                     <tr style="border-top: 2px solid var(--border-color);">
-                        <th colspan="5" style="text-align: right; font-size: 16px;">Total Expense:</th>
-                        <th style="text-align: right; color: var(--danger); font-size: 16px;">Tk. {{ number_format($total, 2) }}</th>
+                        <th colspan="6" style="text-align: right; font-size: 16px;">Total Expense:</th>
+                        <th style="text-align: right; color: var(--danger); font-size: 16px; white-space: nowrap;">Tk.{{ number_format($totalExpense ?? 0, 2) }}</th>
                     </tr>
                 </tfoot>
                 @endif
             </table>
         </div>
+        @if($report_data instanceof \Illuminate\Pagination\LengthAwarePaginator && $report_data->hasPages())
+            <div class="custom-pagination" style="margin-top: 24px;">
+                {{ $report_data->appends(request()->query())->links() }}
+            </div>
+        @endif
     </div>
 
     <style>
@@ -178,7 +204,7 @@
             headerData.push([]); 
 
             const ws = XLSX.utils.aoa_to_sheet(headerData);
-            const colCount = 5;
+            const colCount = 7;
             const merges = [
                 { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
                 { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } }
@@ -194,15 +220,38 @@
             XLSX.utils.sheet_add_dom(ws, tableClone, { origin: -1 });
 
             // Footer
-            const footerData = [['Total Expense:', '', '', '', "Tk. {{ number_format($total ?? 0, 2) }}"]];
+            const footerData = [['Total Expense:', '', '', '', '', '', "Tk. {{ number_format($totalExpense ?? 0, 2) }}"]];
             const startFooterRow = XLSX.utils.decode_range(ws['!ref']).e.r + 1;
             XLSX.utils.sheet_add_aoa(ws, footerData, { origin: -1 });
-            merges.push({ s: { r: startFooterRow, c: 0 }, e: { r: startFooterRow, c: 3 } });
+            merges.push({ s: { r: startFooterRow, c: 0 }, e: { r: startFooterRow, c: 5 } });
             
             const cellRef = XLSX.utils.encode_cell({ r: startFooterRow, c: colCount - 1 });
             if (ws[cellRef]) ws[cellRef].s = { alignment: { horizontal: "left" }, font: { bold: true } };
             const labelRef = XLSX.utils.encode_cell({ r: startFooterRow, c: 0 });
             if (ws[labelRef]) ws[labelRef].s = { alignment: { horizontal: "right" }, font: { bold: true } };
+
+            // Handle strike-through for Rejected items
+            const bodyRange = XLSX.utils.decode_range(ws['!ref']);
+            const tableRows = tableClone.querySelectorAll('tr');
+            const dataRowsOnly = Array.from(tableRows).filter(r => r.parentElement.tagName.toLowerCase() === 'tbody');
+            const tableDataStartRow = startFooterRow - dataRowsOnly.length;
+            
+            for(let i = 0; i < dataRowsOnly.length; i++) {
+                const R = tableDataStartRow + i;
+                const statusCell = dataRowsOnly[i].cells[5];
+                const statusVal = statusCell ? statusCell.innerText.trim().toLowerCase() : '';
+                
+                if(statusVal === 'rejected') {
+                    const amountColIndex = 6; 
+                    const stCellRef = XLSX.utils.encode_cell({ r: R, c: amountColIndex });
+                    if(ws[stCellRef]) {
+                        ws[stCellRef].s = ws[stCellRef].s || {};
+                        ws[stCellRef].s.font = ws[stCellRef].s.font || {};
+                        ws[stCellRef].s.font.strike = true;
+                        ws[stCellRef].s.font.color = { rgb: "999999" };
+                    }
+                }
+            }
 
             ws['!merges'] = merges;
             const wb = XLSX.utils.book_new();
@@ -240,18 +289,44 @@
                 margin: { left: 14, right: 14 }
             });
 
-            const foot = [[{ content: 'Total Expense:', colSpan: 4, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($total ?? 0, 2) }}', styles: { halign: 'right', fontStyle: 'bold' } }]];
+            const foot = [[{ content: 'Total Expense:', colSpan: 6, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($totalExpense ?? 0, 2) }}', styles: { halign: 'right', fontStyle: 'bold' } }]];
 
             doc.autoTable({
-                head: [[{content:'Date'}, {content:'Project'}, {content:'Category'}, {content:'Description'}, {content:'Amount', styles:{halign:'right'}}]],
+                head: [[{content:'Date'}, {content:'Invoice No'}, {content:'Project'}, {content:'Category'}, {content:'Description'}, {content:'Status'}, {content:'Amount', styles:{halign:'right'}}]],
                 body: body,
                 foot: foot,
                 startY: doc.lastAutoTable.finalY,
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', lineWidth: 0.1, lineColor: [200, 200, 200] },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-                columnStyles: { 4: { halign: 'right' } },
-                footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' }
+                columnStyles: { 6: { halign: 'right' } },
+                footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
+                didParseCell: function (data) {
+                    if (data.section === 'body') {
+                        const statusColIndex = 5;
+                        const amountColIndex = 6;
+                        const statusText = data.row.cells[statusColIndex].text[0] || '';
+                        
+                        if (statusText && statusText.toLowerCase() === 'rejected' && data.column.index === amountColIndex) {
+                            data.cell.styles.textColor = [150, 150, 150];
+                        }
+                    }
+                },
+                didDrawCell: function (data) {
+                    if (data.section === 'body' && data.column.index === 6) {
+                        const statusText = (data.row.cells[5].text[0] || '').trim().toLowerCase();
+                        if (statusText === 'rejected') {
+                            const { cell } = data;
+                            const lineX = cell.x + 2;
+                            const lineY = cell.y + (cell.height / 2);
+                            const lineWidth = cell.width - 4;
+                            
+                            doc.setDrawColor(150, 150, 150);
+                            doc.setLineWidth(0.3);
+                            doc.line(lineX, lineY, lineX + lineWidth, lineY);
+                        }
+                    }
+                }
             });
 
             doc.save("Project_Expenses_Report.pdf");

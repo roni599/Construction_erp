@@ -88,6 +88,18 @@
                                     </td>
                                     <td style="font-size: 13px; color: var(--text-secondary);">
                                         <span style="color: var(--text-primary); font-weight: 500;">[{{ $item->type }}]</span> {{ $item->description }}
+                                        @if($item->type === 'Expense')
+                                            <div style="margin-top: 4px;">
+                                                <span class="badge" style="
+                                                    padding: 2px 6px; font-size: 9px;
+                                                    background: {{ $item->status === 'approved' ? 'rgba(40, 167, 69, 0.1)' : ($item->status === 'rejected' ? 'rgba(220, 53, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)') }};
+                                                    color: {{ $item->status === 'approved' ? 'var(--success)' : ($item->status === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }};
+                                                    border: 1px solid {{ $item->status === 'approved' ? 'var(--success)' : ($item->status === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }};
+                                                ">
+                                                    {{ ucfirst($item->status) }}
+                                                </span>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td style="text-align: right; font-weight: 600; color: var(--success);">
                                         @if($item->direction === 'in')
@@ -98,7 +110,12 @@
                                     </td>
                                     <td style="text-align: right; font-weight: 600; color: var(--danger);">
                                         @if($item->direction === 'out')
-                                            Tk. {{ number_format($item->debit, 2) }}
+                                            @if($item->type === 'Expense' && $item->status !== 'approved')
+                                                <span style="text-decoration: line-through; opacity: 0.5; font-size: 11px;">Tk. {{ number_format($item->amount, 2) }}</span>
+                                                <br><span style="font-size: 12px;">Tk. 0.00</span>
+                                            @else
+                                                Tk. {{ number_format($item->debit, 2) }}
+                                            @endif
                                         @else
                                             <span style="opacity: 0.2;">-</span>
                                         @endif

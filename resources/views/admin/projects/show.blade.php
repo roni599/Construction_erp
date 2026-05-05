@@ -38,18 +38,27 @@
                 <p><strong>Email:</strong> {{ $project->manager->email ?? 'not set' }}</p>
                 <p><strong>Address:</strong> {{ $project->manager->address ?? 'not set' }}</p>
             @endif
-            <div style="display: flex; justify-content: space-between; gap: 16px; margin-top: 16px;">
-                <div>
-                    <p><strong>Total P&L:</strong> <br><span style="color: {{ $summary['profit_loss'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['profit_loss'], 2) }}</span></p>
-                    <p style="margin-top: 12px;"><strong>Total Client Payments:</strong> <br>Tk. {{ number_format($summary['total_client_payments'], 2) }}</p>
+            <div style="display: flex; justify-content: space-between; gap: 0; margin-top: 16px;">
+                <div style="flex: 1;">
+                    <p style="font-size: 13px;"><strong>Project P&L:</strong> <br><span style="color: {{ $summary['profit_loss'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['profit_loss'], 2) }}</span></p>
+                    <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
+                        Payments: +{{ number_format($summary['total_client_payments'], 2) }}<br>
+                        Expenses: -{{ number_format($summary['total_expenses'], 2) }}
+                    </div>
                 </div>
-                <div>
-                    <p><strong>Manager Balance:</strong> <br><span style="color: {{ $summary['manager_cash_balance'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['manager_cash_balance'], 2) }}</span></p>
-                    <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+                <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 6px;">
+                    <p style="font-size: 13px;"><strong>PM Balance:</strong> <br><span style="color: {{ $summary['manager_cash_balance'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['manager_cash_balance'], 2) }}</span></p>
+                    <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
                         Funds: +{{ number_format($summary['total_manager_funds'], 2) }}<br>
-                        Expenses: -{{ number_format($summary['total_expenses'], 2) }}<br>
+                        PM Exp: -{{ number_format($summary['pm_expenses'], 2) }}<br>
                         Returns: -{{ number_format($summary['total_manager_returns'], 2) }}
-                    </p>
+                    </div>
+                </div>
+                <div style="flex: 1; border-left: 1px solid var(--border-color); padding-left: 6px;">
+                    <p style="font-size: 13px;"><strong>Admin Balance:</strong> <br><span style="color: {{ $summary['admin_cash_balance'] >= 0 ? 'var(--success)' : 'var(--danger)' }}; font-size: 18px; font-weight: bold;">Tk. {{ number_format($summary['admin_cash_balance'], 2) }}</span></p>
+                    <div style="margin-top: 8px; font-size: 13px; color: var(--text-secondary); white-space: nowrap;">
+                        Admin Exp: -{{ number_format($summary['admin_expenses'], 2) }}
+                    </div>
                 </div>
             </div>
         </div>

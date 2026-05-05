@@ -41,6 +41,7 @@ class DashboardController extends Controller
             'funds' => 0,
             'returns' => 0,
             'expenses' => 0,
+            'admin_expenses' => 0,
             'balance' => 0,
             'profit_loss' => 0
         ];
@@ -58,6 +59,7 @@ class DashboardController extends Controller
             $searchTotals['funds'] += $summary['total_manager_funds'];
             $searchTotals['returns'] += $summary['total_manager_returns'];
             $searchTotals['expenses'] += $summary['total_expenses'];
+            $searchTotals['admin_expenses'] += $summary['admin_expenses'];
             $searchTotals['balance'] += $summary['manager_cash_balance'];
             $searchTotals['profit_loss'] += $summary['profit_loss'];
             
@@ -78,7 +80,7 @@ class DashboardController extends Controller
             $proj = Project::find($request->project_id);
             $selectedManager = $proj ? $proj->manager : null;
         }
-
+        
         return view('admin.dashboard', compact(
             'totalProjects', 
             'activeProjects', 
@@ -126,7 +128,7 @@ class DashboardController extends Controller
         $balance = 0;
 
         foreach ($projects as $project) {
-            $summary = $this->financialService->getProjectSummary($project);
+            $summary = $this->financialService->getProjectSummary($project, null, null, true);
             $project->summary = $summary;
             $totalReceived += $summary['total_manager_funds'];
             $totalExpenses += $summary['total_expenses'];

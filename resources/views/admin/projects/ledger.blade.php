@@ -58,8 +58,9 @@
                         <th>Txn ID</th>
                         <th>Type</th>
                         <th>Description</th>
-                        <th style="color: var(--success); text-align: right;">Credit (In)</th>
-                        <th style="color: var(--danger); text-align: right;">Debit (Out)</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="color: var(--success); text-align: right; white-space: nowrap;">Credit (In)</th>
+                        <th style="color: var(--danger); text-align: right; white-space: nowrap;">Debit (Out)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,19 +90,45 @@
                             </td>
                             <td><strong>{{ $entry['type'] }}</strong></td>
                             <td>{{ $entry['description'] }}</td>
-                            <td style="color: var(--success); text-align: right;">{{ $entry['credit'] != 0 ? 'Tk. '.number_format($entry['credit'], 2) : '-' }}</td>
-                            <td style="color: var(--danger); text-align: right;">{{ $entry['debit'] != 0 ? 'Tk. '.number_format($entry['debit'], 2) : '-' }}</td>
+                            <td style="text-align: center;">
+                                @if(isset($entry['status']))
+                                    <span class="badge" style="
+                                        padding: 4px 10px; font-size: 11px; font-weight: 600;
+                                        @if($entry['status'] === 'approved')
+                                            background: rgba(40, 167, 69, 0.1); color: var(--success); border: 1px solid var(--success);
+                                        @elseif($entry['status'] === 'rejected')
+                                            background: rgba(220, 53, 69, 0.1); color: var(--danger); border: 1px solid var(--danger);
+                                        @else
+                                            background: rgba(255, 193, 7, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
+                                        @endif
+                                    ">
+                                        {{ ucfirst($entry['status']) }}
+                                    </span>
+                                @else
+                                    <span style="color: var(--text-secondary); opacity: 0.6;">-</span>
+                                @endif
+                            </td>
+                            <td style="color: var(--success); text-align: right; white-space: nowrap;">
+                                {{ $entry['credit'] != 0 ? 'Tk.'.number_format($entry['credit'], 2) : '-' }}
+                            </td>
+                            <td style="color: var(--danger); text-align: right; white-space: nowrap; {{ (isset($entry['status']) && $entry['status'] === 'rejected') ? 'text-decoration: line-through; opacity: 0.6;' : '' }}">
+                                @if(isset($entry['amount']))
+                                    Tk.{{ number_format($entry['amount'], 2) }}
+                                @else
+                                    {{ $entry['debit'] != 0 ? 'Tk.'.number_format($entry['debit'], 2) : '-' }}
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 24px;">No ledger entries found for the selected dates.</td>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 24px;">No ledger entries found for the selected dates.</td>
                         </tr>
                     @endforelse
                 </tbody>
                 @if(count($ledger) > 0)
                     <tfoot>
                         <tr style="background: rgba(255, 255, 255, 0.05); font-weight: bold; border-top: 2px solid var(--border-color);">
-                            <th colspan="4" style="text-align: right; font-size: 15px; padding: 12px;">PROJECT TOTALS (Payments - Expenses):</th>
+                            <th colspan="5" style="text-align: right; font-size: 15px; padding: 12px;">PROJECT TOTALS (Payments - Expenses):</th>
                             <th style="color: var(--success); text-align: right; font-size: 15px; padding: 12px;">
                                 Tk. {{ number_format($summary['total_client_payments'], 2) }}
                                 <div style="font-size: 10px; font-weight: normal; color: var(--text-secondary); margin-top: 4px;">Total Received</div>
@@ -112,7 +139,7 @@
                             </th>
                         </tr>
                         <tr style="background: rgba(255, 255, 255, 0.1); font-weight: bold;">
-                            <th colspan="4" style="text-align: right; font-size: 16px; padding: 12px;">NET PROFIT / LOSS:</th>
+                            <th colspan="5" style="text-align: right; font-size: 16px; padding: 12px;">NET PROFIT / LOSS:</th>
                             <th colspan="2" style="text-align: center; font-size: 18px; padding: 12px; color: {{ ($summary['total_client_payments'] - $summary['total_expenses']) >= 0 ? 'var(--success)' : 'var(--danger)' }}">
                                 Tk. {{ number_format($summary['total_client_payments'] - $summary['total_expenses'], 2) }}
                             </th>

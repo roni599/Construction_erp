@@ -100,7 +100,8 @@
                                 // For managers: Fund Received (from Admin) is IN, while Expense and Fund Return (to Admin) are OUT.
                                 $showIn = in_array($type, ['all', 'fund_pm']);
                                 $showOut = in_array($type, ['all', 'expense', 'fund_return']);
-                                $colCount = 6 + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
+                                $showStatus = in_array($type, ['all', 'expense']);
+                                $colCount = 6 + ($showStatus ? 1 : 0) + ($showIn ? 1 : 0) + ($showOut ? 1 : 0);
                             @endphp
                             <tr>
                                 <th>Date</th>
@@ -109,8 +110,9 @@
                                 <th>Method</th>
                                 <th>Category</th>
                                 <th>Description</th>
-                                @if($showIn) <th style="text-align: right;">{{ $type === 'fund_pm' ? 'Fund Received' : 'Received (In)' }}</th> @endif
-                                @if($showOut) <th style="text-align: right;">{{ $type === 'fund_return' ? 'Fund Return' : 'Spent (Out)' }}</th> @endif
+                                @if($showStatus) <th style="text-align: center;">Status</th> @endif
+                                @if($showIn) <th style="text-align: center;">{{ $type === 'fund_pm' ? 'Fund Received' : 'Received (In)' }}</th> @endif
+                                @if($showOut) <th style="text-align: center;">{{ $type === 'fund_return' ? 'Fund Return' : 'Spent (Out)' }}</th> @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -137,15 +139,30 @@
                                     </td>
                                     <td style="text-transform: capitalize;">{{ str_replace('_', ' ', $item['method']) }}</td>
                                     <td>{{ $item['category'] }}</td>
-                                    <td>{{ $item['description'] }}</td>
+                                    <td>{{ $item['description'] ?: '-' }}</td>
+                                    @if($showStatus)
+                                    <td style="text-align: center;">
+                                        @if(isset($item['status']))
+                                            <span class="badge" style="background: {{ $item['status'] === 'approved' ? 'rgba(40, 167, 69, 0.1)' : ($item['status'] === 'rejected' ? 'rgba(220, 53, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)') }}; color: {{ $item['status'] === 'approved' ? 'var(--success)' : ($item['status'] === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }}; border: 1px solid {{ $item['status'] === 'approved' ? 'var(--success)' : ($item['status'] === 'rejected' ? 'var(--danger)' : 'var(--accent-yellow)') }};">
+                                                {{ ucfirst($item['status']) }}
+                                            </span>
+                                        @else
+                                            <span class="badge" style="background: rgba(40, 167, 69, 0.1); color: var(--success); border: 1px solid var(--success);">Approved</span>
+                                        @endif
+                                    </td>
+                                    @endif
                                     @if($showIn)
                                     <td style="text-align: right; color: var(--success);">
                                         {{ $item['credit'] > 0 ? 'Tk. ' . number_format($item['credit'], 2) : '-' }}
                                     </td>
                                     @endif
                                     @if($showOut)
-                                    <td style="text-align: right; color: var(--danger);">
-                                        {{ $item['debit'] > 0 ? 'Tk. ' . number_format($item['debit'], 2) : '-' }}
+                                    <td style="text-align: right; color: var(--danger); {{ ($item['type'] === 'Expense' && isset($item['status']) && $item['status'] !== 'approved') ? 'text-decoration: line-through; opacity: 0.6;' : '' }}">
+                                        @if($item['type'] === 'Expense')
+                                            Tk. {{ number_format($item['amount'], 2) }}
+                                        @else
+                                            {{ $item['debit'] > 0 ? 'Tk. ' . number_format($item['debit'], 2) : '-' }}
+                                        @endif
                                     </td>
                                     @endif
                                 </tr>
@@ -158,10 +175,9 @@
                         @if($report_data->count() > 0)
                             <tfoot style="background: rgba(255,255,255,0.05);">
                                 <tr>
-                                    <th colspan="6" style="text-align: right;">Total:</th>
+                                    <th colspan="{{ 6 + ($showStatus ? 1 : 0) }}" style="text-align: right;">Total:</th>
                                     @if($showIn) <th style="text-align: right; color: var(--success);">Tk. {{ number_format($totalIn, 2) }}</th> @endif
                                     @if($showOut) <th style="text-align: right; color: var(--danger);">Tk. {{ number_format($totalOut, 2) }}</th> @endif
-                                </tr>
                                 </tr>
                             </tfoot>
                         @endif
@@ -175,6 +191,9 @@
     <script>
         function exportToExcel() {
             const downloadDate = new Date().toLocaleDateString();
+            const showIn = {{ $showIn ? 'true' : 'false' }};
+            const showOut = {{ $showOut ? 'true' : 'false' }};
+            const showStatus = {{ $showStatus ? 'true' : 'false' }};
             @php
                 $typeLabels = [
                     'all' => 'All Transactions',
@@ -223,28 +242,38 @@
             }
             merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: colCount - 1 } });
             
-            // 2. Add Table
-            const table = document.getElementById("report-table");
-            const tableClone = table.cloneNode(true);
-            const tfoot = tableClone.querySelector('tfoot');
-            if (tfoot) tfoot.remove();
+            // 2. Add Table Data
+            const tableData = [];
+            const tableRows = document.querySelectorAll('#report-table tr');
+            tableRows.forEach(row => {
+                // Skip tfoot as we add it manually later
+                if (row.parentElement.tagName.toLowerCase() !== 'tfoot') {
+                    const rowData = [];
+                    row.querySelectorAll('th, td').forEach(cell => {
+                        rowData.push(cell.innerText.trim());
+                    });
+                    if (rowData.length > 0) tableData.push(rowData);
+                }
+            });
             
-            XLSX.utils.sheet_add_dom(ws, tableClone, { origin: -1 });
+            XLSX.utils.sheet_add_aoa(ws, tableData, { origin: -1 });
 
             // 3. Footer Data & Merges
             const footerData = [];
             
             // Total Row
-            const totalRow = ['Total:', '', '', '', ''];
+            const totalLabelCols = {{ 6 + ($showStatus ? 1 : 0) }};
+            const totalRow = [];
+            for(let i=0; i<totalLabelCols; i++) totalRow.push(i === 0 ? 'Total:' : '');
+            
             @if($showIn) totalRow.push("Tk. {{ number_format($totalIn ?? 0, 2) }}"); @endif
             @if($showOut) totalRow.push("Tk. {{ number_format($totalOut ?? 0, 2) }}"); @endif
             footerData.push(totalRow);
 
-            
             const startFooterRow = XLSX.utils.decode_range(ws['!ref']).e.r + 1;
             XLSX.utils.sheet_add_aoa(ws, footerData, { origin: -1 });
 
-            merges.push({ s: { r: startFooterRow, c: 0 }, e: { r: startFooterRow, c: 4 } });
+            merges.push({ s: { r: startFooterRow, c: 0 }, e: { r: startFooterRow, c: totalLabelCols - 1 } });
 
             // Style footer
             const row = startFooterRow;
@@ -252,14 +281,45 @@
             const labelRef = XLSX.utils.encode_cell({ r: row, c: 0 });
             if (ws[labelRef]) ws[labelRef].s = { alignment: { horizontal: "right" }, font: { bold: true } };
             
-            // Value styling (Col 5 and 6)
-            [5, 6].forEach(col => {
+            // Value styling (Shifted based on colCount)
+            const valueCols = [];
+            if(showIn) valueCols.push(totalLabelCols);
+            if(showOut) valueCols.push(totalLabelCols + (showIn ? 1 : 0));
+
+            valueCols.forEach((col, idx) => {
                 const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
-                let align = "left";
-                if (col === 6) align = "right"; // Total Out stays right
-                if (col === 5) align = "left"; // Total In left
+                let align = "right";
                 if (ws[cellRef]) ws[cellRef].s = { alignment: { horizontal: align }, font: { bold: true } };
             });
+
+            // 4. Handle Strike-through for Rejected items in Body
+            @if($showStatus)
+            const bodyRange = XLSX.utils.decode_range(ws['!ref']);
+            // tableRows was defined above during table data extraction
+            const totalExcelRows = bodyRange.e.r + 1;
+            // Get actual data rows (excluding header)
+            const dataRowsOnly = Array.from(tableRows).filter(r => r.parentElement.tagName.toLowerCase() === 'tbody');
+            const tableDataStartRow = startFooterRow - dataRowsOnly.length;
+            
+            for(let i = 0; i < dataRowsOnly.length; i++) {
+                const R = tableDataStartRow + i;
+                const statusCell = dataRowsOnly[i].cells[6]; // Status is index 6
+                const statusVal = statusCell ? statusCell.innerText.trim().toLowerCase() : '';
+                
+                if(statusVal === 'rejected') {
+                    const colsToCheck = [7, 8]; 
+                    colsToCheck.forEach(C => {
+                        const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                        if(ws[cellRef]) {
+                            ws[cellRef].s = ws[cellRef].s || {};
+                            ws[cellRef].s.font = ws[cellRef].s.font || {};
+                            ws[cellRef].s.font.strike = true;
+                            ws[cellRef].s.font.color = { rgb: "999999" };
+                        }
+                    });
+                }
+            }
+            @endif
 
             ws['!merges'] = merges;
 
@@ -289,6 +349,7 @@
             const colCount = {{ $colCount }};
             const showIn = {{ $showIn ? 'true' : 'false' }};
             const showOut = {{ $showOut ? 'true' : 'false' }};
+            const showStatus = {{ $showStatus ? 'true' : 'false' }};
 
             // 1. Manually extract body data
             const body = [];
@@ -307,7 +368,7 @@
 
             // 3. Draw Bordered Header Table
             const headerRows = [
-                [{ content: projectTitle.toUpperCase(), styles: { halign: 'center', fontSize: 14, fontStyle: 'bold', fillColor: [248, 249, 250] } }],
+                [{ content: projectTitle.toUpperCase(), styles: { halign: 'center', fontSize: 14, fontStyle: 'bold' } }],
                 [{ content: projectName, styles: { halign: 'center', fontSize: 10, fontStyle: 'bold' } }]
             ];
             
@@ -334,6 +395,7 @@
                 { content: 'Category', styles: { halign: 'center' } },
                 { content: 'Description', styles: { halign: 'center' } }
             ];
+            if(showStatus) tableHeaders.push({ content: 'Status', styles: { halign: 'center' } });
             if(showIn) tableHeaders.push({ content: 'Received (In)', styles: { halign: 'right' } });
             if(showOut) tableHeaders.push({ content: 'Spent (Out)', styles: { halign: 'right' } });
             
@@ -341,7 +403,8 @@
 
             // 4. Construct Footer
             const foot = [];
-            const footTotal = [{ content: 'Total:', colSpan: 6, styles: { halign: 'right' } }];
+            const footLabelCols = colCount - (showIn && showOut ? 2 : 1);
+            const footTotal = [{ content: 'Total:', colSpan: footLabelCols, styles: { halign: 'right' } }];
             if(showIn) footTotal.push({ content: 'Tk. ' + totalIn, styles: { halign: 'right' } });
             if(showOut) footTotal.push({ content: 'Tk. ' + totalOut, styles: { halign: 'right' } });
             foot.push(footTotal);
@@ -349,24 +412,53 @@
 
             // 5. Generate the table
             const columnStyles = {};
+            const amountStartCol = 6 + (showStatus ? 1 : 0);
             if (showIn && showOut) {
-                columnStyles[6] = { halign: 'right' };
-                columnStyles[7] = { halign: 'right' };
+                columnStyles[amountStartCol] = { halign: 'right' };
+                columnStyles[amountStartCol + 1] = { halign: 'right' };
             } else if (showIn || showOut) {
-                columnStyles[6] = { halign: 'right' };
+                columnStyles[amountStartCol] = { halign: 'right' };
             }
 
             doc.autoTable({
                 head: headRows,
                 body: body,
                 foot: foot,
-                startY: nextY, // No gap
+                startY: nextY,
                 showFoot: 'lastPage',
                 theme: 'grid',
                 styles: { fontSize: 8, halign: 'center', lineWidth: 0.1, lineColor: [200, 200, 200] },
                 headStyles: { fillColor: [41, 128, 185], textColor: 255, halign: 'center' },
                 columnStyles: columnStyles,
-                footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' }
+                footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, lineColor: [200, 200, 200], halign: 'right' },
+                didParseCell: function (data) {
+                    if (data.section === 'body' && showStatus) {
+                        const statusColIndex = 6;
+                        const amountColIndices = [7, 8];
+                        const statusText = (data.row.cells[statusColIndex].text[0] || '').trim().toLowerCase();
+                        
+                        if (statusText === 'rejected' && amountColIndices.includes(data.column.index)) {
+                            data.cell.styles.textColor = [150, 150, 150];
+                        }
+                    }
+                },
+                didDrawCell: function (data) {
+                    // Index 7 is In, 8 is Out, Status is Index 6
+                    const isAmountCol = (data.column.index === 7 || data.column.index === 8);
+                    if (data.section === 'body' && isAmountCol && showStatus) {
+                        const statusText = (data.row.cells[6].text[0] || '').trim().toLowerCase();
+                        if (statusText === 'rejected') {
+                            const { cell } = data;
+                            const lineX = cell.x + 2;
+                            const lineY = cell.y + (cell.height / 2);
+                            const lineWidth = cell.width - 4;
+                            
+                            doc.setDrawColor(150, 150, 150);
+                            doc.setLineWidth(0.3);
+                            doc.line(lineX, lineY, lineX + lineWidth, lineY);
+                        }
+                    }
+                }
             });
 
             doc.save("My_Project_Report_{{ $selected_project->project_name ?? 'Export' }}.pdf");

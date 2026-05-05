@@ -46,7 +46,9 @@ class ProjectWebController extends Controller
         $employees = Employee::whereHas('user', function($q) {
             $q->where('role', 'project_manager');
         })->get();
-        return view('admin.projects.index', compact('projects', 'allProjects', 'employees'));
+        $categories = ExpenseCategory::where('is_active', true)->get();
+
+        return view('admin.projects.index', compact('projects', 'allProjects', 'employees', 'categories'));
     }
 
     public function adminCreate()
@@ -99,9 +101,10 @@ class ProjectWebController extends Controller
         }
 
         $expenses = $query->latest('expense_date')->orderBy('id', 'desc')->paginate($request->per_page ?? 15);
-        $projects = Project::orderBy('project_name', 'asc')->get();
+        $projects = Project::where('status', 'running')->orderBy('project_name', 'asc')->get();
+        $categories = ExpenseCategory::where('is_active', true)->get();
 
-        return view('admin.projects.all_expenses', compact('expenses', 'projects'));
+        return view('admin.projects.all_expenses', compact('expenses', 'projects', 'categories'));
     }
 
     public function adminAllReturns(Request $request)
@@ -219,8 +222,9 @@ class ProjectWebController extends Controller
 
         $expenses = $query->get();
         $summary = $this->financialService->getProjectSummary($project);
+        $categories = ExpenseCategory::where('is_active', true)->get();
 
-        return view('admin.projects.expenses', compact('project', 'expenses', 'summary'));
+        return view('admin.projects.expenses', compact('project', 'expenses', 'summary', 'categories'));
     }
 
     public function storePayment(Request $request, $id)
@@ -412,6 +416,95 @@ class ProjectWebController extends Controller
         return back()->with('success', 'Fund disbursed to manager successfully.');
     }
 
+    public function storeGlobalExpense(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:1',
+            'expense_date' => 'required|date',
+            'bill_image' => 'nullable|image|max:5120'
+        ]);
+
+        $project = Project::findOrFail($request->project_id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
+
+        if (!$project->employee_id) {
+            return back()->with('error', 'Please assign a project manager to ' . $project->project_name . ' before recording expenses.');
+        }
+
+        $summary = $this->financialService->getProjectSummary($project);
+        if ($request->amount > $summary['manager_cash_balance']) {
+            return back()->with('error', 'Insufficient hand cash for ' . $project->project_name . '! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('bill_image')) {
+            $imagePath = $request->file('bill_image')->store('receipts', 'public');
+        }
+
+        Expense::create([
+            'project_id' => $project->id,
+            'employee_id' => $project->employee_id,
+            'recorded_by' => auth()->id(),
+            'expense_category_id' => $request->expense_category_id,
+            'amount' => $request->amount,
+            'expense_date' => $request->expense_date,
+            'description' => $request->description,
+            'bill_image' => $imagePath,
+            'status' => 'approved'
+        ]);
+
+        return back()->with('success', 'Expense recorded successfully for ' . $project->project_name);
+    }
+
+    public function adminStoreExpense(Request $request, $id)
+    {
+        $project = Project::findOrFail($id);
+
+        if ($project->status !== 'running') {
+            return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
+        }
+
+        if (!$project->employee_id) {
+            return back()->with('error', 'Please assign a project manager to this project before recording expenses.');
+        }
+
+        $request->validate([
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'amount' => 'required|numeric|min:1',
+            'expense_date' => 'required|date',
+            'bill_image' => 'nullable|image|max:5120'
+        ]);
+
+        $summary = $this->financialService->getProjectSummary($project);
+        if ($request->amount > $summary['manager_cash_balance']) {
+            return back()->with('error', 'Insufficient hand cash! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
+        }
+
+        $imagePath = null;
+        if ($request->hasFile('bill_image')) {
+            $imagePath = $request->file('bill_image')->store('receipts', 'public');
+        }
+
+        Expense::create([
+            'project_id' => $project->id,
+            'employee_id' => $project->employee_id,
+            'recorded_by' => auth()->id(),
+            'expense_category_id' => $request->expense_category_id,
+            'amount' => $request->amount,
+            'expense_date' => $request->expense_date,
+            'description' => $request->description,
+            'bill_image' => $imagePath,
+            'status' => 'approved'
+        ]);
+
+        return back()->with('success', 'Expense recorded successfully.');
+    }
+
     public function showPayment($id)
     {
         $payment = ClientPayment::with(['project', 'recordedBy'])->findOrFail($id);
@@ -545,7 +638,7 @@ class ProjectWebController extends Controller
             ? ManagerFund::where('project_id', $id)->orderBy('fund_date', 'desc')->get()
             : ManagerFund::where('project_id', $id)->orderBy('fund_date', 'desc')->paginate($perPage, ['*'], 'fund_page');
 
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         $categories = \App\Models\ExpenseCategory::where('is_active', true)->get();
         $admins = \App\Models\User::where('role', 'admin')->get();
 
@@ -573,7 +666,12 @@ class ProjectWebController extends Controller
         }
 
         // 2. Expenses (Debit)
-        $allExpenses = Expense::where('project_id', $id)->with('category')->get();
+        $allExpenses = Expense::where('project_id', $id)
+            ->whereHas('recordedBy', function($q) {
+                $q->where('role', 'project_manager');
+            })
+            ->with(['category', 'recordedBy'])->get();
+            
         foreach ($allExpenses as $expense) {
             $ledger->push((object)[
                 'id' => $expense->id,
@@ -581,7 +679,9 @@ class ProjectWebController extends Controller
                 'type' => 'Expense',
                 'description' => ($expense->category->name ?? 'General') . ': ' . ($expense->description ?? 'Project Expense'),
                 'credit' => 0,
-                'debit' => $expense->amount,
+                'debit' => $expense->status === 'approved' ? $expense->amount : 0,
+                'amount' => $expense->amount, // Original amount for display
+                'status' => $expense->status,
                 'invoice_no' => $expense->invoice_no ?? 'EXP-'.$expense->id,
                 'invoice_url' => route('shared.expenses.invoice', $expense->id),
                 'direction' => 'out'
@@ -612,7 +712,7 @@ class ProjectWebController extends Controller
     public function managerStoreReturn(Request $request, $id)
     {
         $project = Project::where('id', $id)->where('employee_id', $request->user()->employee_id)->firstOrFail();
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         $currentBalance = $summary['manager_cash_balance'];
 
         if ($currentBalance <= 0) {
@@ -646,7 +746,7 @@ class ProjectWebController extends Controller
         $projects = Project::where('employee_id', $request->user()->employee_id)->get();
         $balances = [];
         foreach($projects as $p) {
-            $sum = $this->financialService->getProjectSummary($p);
+            $sum = $this->financialService->getProjectSummary($p, null, null, true);
             $balances[$p->id] = $sum['manager_cash_balance'];
         }
         $admins = \App\Models\User::where('role', 'admin')->get();
@@ -675,6 +775,23 @@ class ProjectWebController extends Controller
 
         return view('manager.projects.returns', compact('projects', 'balances', 'admins', 'returns'));
     }
+    public function adminCreateGlobalExpense(Request $request)
+    {
+        $projects = Project::where('status', 'running')->get();
+        $categories = ExpenseCategory::where('is_active', true)->get();
+        
+        $selectedProject = null;
+        $summary = null;
+        if ($request->filled('project_id')) {
+            $selectedProject = Project::find($request->project_id);
+            if ($selectedProject) {
+                $summary = $this->financialService->getProjectSummary($selectedProject);
+            }
+        }
+
+        return view('admin.projects.create_expense', compact('projects', 'categories', 'selectedProject', 'summary'));
+    }
+
 
     public function managerCreateGlobalExpense(Request $request)
     {
@@ -688,7 +805,7 @@ class ProjectWebController extends Controller
                 ->where('employee_id', $request->user()->employee_id)
                 ->first();
             if ($selectedProject) {
-                $summary = $this->financialService->getProjectSummary($selectedProject);
+                $summary = $this->financialService->getProjectSummary($selectedProject, null, null, true);
             }
         }
 
@@ -713,7 +830,7 @@ class ProjectWebController extends Controller
             return back()->with('error', 'Expenses can only be recorded for active (running) projects.');
         }
 
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         if ($request->amount > $summary['manager_cash_balance']) {
             return back()->with('error', 'Insufficient hand cash for ' . $project->project_name . '! Available: Tk. ' . number_format($summary['manager_cash_balance'], 2));
         }
@@ -726,11 +843,13 @@ class ProjectWebController extends Controller
         Expense::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
+            'recorded_by' => auth()->id(),
             'expense_category_id' => $request->expense_category_id,
             'amount' => $request->amount,
             'expense_date' => $request->expense_date,
             'description' => $request->description,
             'bill_image' => $imagePath,
+            'status' => 'pending'
         ]);
 
         return redirect()->route('manager.projects.index')->with('success', 'Expense recorded successfully for ' . $project->project_name);
@@ -745,7 +864,7 @@ class ProjectWebController extends Controller
             ->where('employee_id', $request->user()->employee_id)
             ->firstOrFail();
 
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         $currentBalance = $summary['manager_cash_balance'];
 
         if ($currentBalance <= 0) {
@@ -781,15 +900,35 @@ class ProjectWebController extends Controller
             ->where('employee_id', $request->user()->employee_id)
             ->firstOrFail();
         
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         $ledger = $this->financialService->getProjectLedger(
             $project,
             $request->start_date,
             $request->end_date,
-            $request->invoice_no
+            $request->invoice_no,
+            true
         );
         
         return view('manager.projects.ledger', compact('project', 'summary', 'ledger'));
+    }
+
+    public function managerPrintLedger(Request $request, $id)
+    {
+        $project = Project::with(['managerFunds', 'expenses.category'])
+            ->where('id', $id)
+            ->where('employee_id', $request->user()->employee_id)
+            ->firstOrFail();
+        
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
+        $ledger = $this->financialService->getProjectLedger(
+            $project,
+            $request->start_date,
+            $request->end_date,
+            $request->invoice_no,
+            true
+        );
+        
+        return view('manager.projects.print_ledger', compact('project', 'summary', 'ledger'));
     }
 
     public function managerStoreExpense(Request $request, $id)
@@ -807,7 +946,7 @@ class ProjectWebController extends Controller
             'bill_image' => 'nullable|image|max:5120'
         ]);
 
-        $summary = $this->financialService->getProjectSummary($project);
+        $summary = $this->financialService->getProjectSummary($project, null, null, true);
         if ($request->amount > $summary['manager_cash_balance']) {
             return back()->with('error', 'Insufficient hand cash! You only have Tk. ' . number_format($summary['manager_cash_balance'], 2) . ' available for this project.');
         }
@@ -820,11 +959,13 @@ class ProjectWebController extends Controller
         Expense::create([
             'project_id' => $project->id,
             'employee_id' => $project->employee_id,
+            'recorded_by' => auth()->id(),
             'expense_category_id' => $request->expense_category_id,
             'amount' => $request->amount,
             'expense_date' => $request->expense_date,
             'description' => $request->description,
             'bill_image' => $imagePath,
+            'status' => 'pending'
         ]);
 
         return back()->with('success', 'Expense recorded successfully.');
@@ -864,6 +1005,9 @@ class ProjectWebController extends Controller
     public function managerExpenses(Request $request)
     {
         $query = \App\Models\Expense::where('employee_id', auth()->user()->employee_id)
+            ->whereHas('recordedBy', function($q) {
+                $q->where('role', 'project_manager');
+            })
             ->with(['project', 'category']);
 
         if ($request->project_id) {
@@ -948,5 +1092,18 @@ class ProjectWebController extends Controller
         $expense->delete();
 
         return back()->with('success', "Expense of Tk. " . number_format($amount, 2) . " for project '{$projectName}' has been deleted. Project balance has been updated.");
+    }
+
+    public function adminUpdateExpenseStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected'
+        ]);
+
+        $expense = Expense::findOrFail($id);
+        $expense->update(['status' => $request->status]);
+
+        $message = $request->status === 'approved' ? 'Expense approved successfully.' : 'Expense rejected successfully.';
+        return back()->with('success', $message);
     }
 }

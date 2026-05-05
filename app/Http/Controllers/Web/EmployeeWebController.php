@@ -168,7 +168,7 @@ class EmployeeWebController extends Controller
         ])->findOrFail($id);
 
         $totalFunds = $employee->managerFunds->sum('amount');
-        $totalExpenses = $employee->expenses->sum('amount');
+        $totalExpenses = $employee->expenses->where('status', 'approved')->sum('amount');
         $totalReturns = $employee->managerReturns->sum('amount');
         $balance = $totalFunds - $totalExpenses - $totalReturns;
 
@@ -191,6 +191,7 @@ class EmployeeWebController extends Controller
         }
 
         foreach ($employee->expenses as $expense) {
+            if ($expense->status !== 'approved') continue;
             $projectId = $expense->project_id;
             if (!isset($projectSummary[$projectId])) {
                 $projectSummary[$projectId] = [
@@ -238,7 +239,8 @@ class EmployeeWebController extends Controller
                 'amount' => $fund->amount,
                 'invoice_no' => $fund->invoice_no,
                 'invoice_url' => route('admin.projects.funds.invoice', $fund->id),
-                'direction' => 'in'
+                'direction' => 'in',
+                'status' => 'approved'
             ]);
         }
 
@@ -253,7 +255,8 @@ class EmployeeWebController extends Controller
                 'amount' => $expense->amount,
                 'invoice_no' => $expense->invoice_no,
                 'invoice_url' => route('admin.projects.expenses.invoice', $expense->id),
-                'direction' => 'out'
+                'direction' => 'out',
+                'status' => $expense->status
             ]);
         }
 
@@ -268,7 +271,33 @@ class EmployeeWebController extends Controller
                 'amount' => $return->amount,
                 'invoice_no' => $return->invoice_no,
                 'invoice_url' => route('admin.projects.returns.invoice', $return->id),
-                'direction' => 'out'
+                'direction' => 'out',
+                'status' => 'approved'
+            ]);
+        }
+        
+        // Fetch Admin Expenses for projects managed by this manager
+        $projectIds = $employee->projects()->pluck('id');
+        $adminExpenses = \App\Models\Expense::whereIn('project_id', $projectIds)
+            ->whereHas('recordedBy', function($q) {
+                $q->where('role', 'admin');
+            })
+            ->with(['project', 'category'])
+            ->get();
+
+        foreach ($adminExpenses as $expense) {
+            $ledger->push((object)[
+                'id' => $expense->id,
+                'type' => 'Admin Expense',
+                'date' => $expense->expense_date,
+                'project' => $expense->project->project_name ?? 'N/A',
+                'project_id' => $expense->project_id,
+                'description' => 'Admin Recorded: ' . ($expense->category->name ?? 'General'),
+                'amount' => $expense->amount,
+                'invoice_no' => $expense->invoice_no,
+                'invoice_url' => route('admin.projects.expenses.invoice', $expense->id),
+                'direction' => 'out',
+                'status' => $expense->status
             ]);
         }
 

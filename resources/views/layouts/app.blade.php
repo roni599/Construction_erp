@@ -200,6 +200,9 @@
                             <a href="{{ route('admin.projects.index') }}" class="nav-item {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.show') || request()->routeIs('admin.projects.edit') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-tasks" style="font-size: 14px; width: 20px;"></i> <span>Manage Project</span>
                             </a>
+                            <a href="{{ route('admin.projects.expenses.createGlobal') }}" class="nav-item {{ request()->routeIs('admin.projects.expenses.createGlobal') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
+                                <i class="fas fa-file-invoice-dollar" style="font-size: 14px; width: 20px;"></i> <span>Create Expense</span>
+                            </a>
                             <a href="{{ route('admin.projects.payments.create') }}" class="nav-item {{ request()->routeIs('admin.projects.payments.*') ? 'active' : '' }}" style="padding: 8px 12px; font-size: 14px;">
                                 <i class="fas fa-hand-holding-usd" style="font-size: 14px; width: 20px;"></i> <span>Client Payment</span>
                             </a>
@@ -216,6 +219,9 @@
                     </div>
                     <a href="{{ route('admin.employees.index') }}" class="nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
                         <i class="fas fa-users"></i> <span>Project Managers</span>
+                    </a>
+                    <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+                        <i class="fas fa-tags"></i> <span>Expense Category</span>
                     </a>
                     <div class="nav-item-group" style="display: flex; flex-direction: column;">
                         <a href="javascript:void(0)" class="nav-item {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" onclick="toggleSubmenu('reports-submenu')">
@@ -240,6 +246,7 @@
                             </a>
                         </div>
                     </div>
+
                 @else
                     <a href="{{ route('manager.dashboard') }}" class="nav-item {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}">
                         <i class="fas fa-th-large"></i> <span>My Dashboard</span>
@@ -343,8 +350,18 @@
 
             <style>
                 @keyframes slideDown {
-                    from { opacity: 0; transform: translateY(-8px); }
+                    from { opacity: 0; transform: translateY(-100%); }
                     to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translateY(100%); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-slide-down {
+                    animation: slideDown 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+                }
+                .animate-slide-up {
+                    animation: slideUp 0.8s cubic-bezier(0.19, 1, 0.22, 1);
                 }
             </style>
 

@@ -51,8 +51,8 @@
     </div>
 
     <!-- Record Expense Modal -->
-    <div id="expenseModal" class="modal-backdrop" style="display: none;">
-        <div class="glass-panel modal-content" style="position: relative; max-width: 500px; width: 100%; margin-top: -20px;">
+    <div id="expenseModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000; padding-top: 20px;">
+        <div class="glass-panel animate-slide-down" style="position: relative; max-width: 500px; width: 100%; padding: 32px; border-radius: 16px;">
             <button onclick="closeExpenseModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 20px;">
                 <i class="fas fa-times"></i>
             </button>

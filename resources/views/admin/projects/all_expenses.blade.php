@@ -5,13 +5,66 @@
 @section('content')
     <div class="flex-between" style="margin-bottom: 32px;">
         <h2>Project Expenses (All)</h2>
+        <button class="btn btn-primary" onclick="toggleRecordModal()" style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-plus"></i> Record New Expense
+        </button>
+    </div>
+
+    <!-- Record Expense Modal -->
+    <div id="recordExpenseModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000; padding-top: 20px;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 650px; padding: 32px; position: relative; border-radius: 16px;">
+            <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleRecordModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="margin-bottom: 24px;">
+                <h3 style="margin: 0;">Record Project Expense</h3>
+            </div>
+            
+            <form method="POST" action="{{ route('admin.projects.expenses.storeGlobal') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Select Project</label>
+                    <select name="project_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        <option value="">-- Choose a Project --</option>
+                        @foreach($projects as $p)
+                            <option value="{{ $p->id }}">{{ $p->project_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="expense_category_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (Tk.)</label>
+                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expense Date</label>
+                    <input type="date" name="expense_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bill Image / Receipt</label>
+                    <input type="file" name="bill_image" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 16px;">Save Expense</button>
+            </form>
+        </div>
     </div>
 
 
 
     <!-- Edit Expense Modal -->
-    <div id="editExpenseModal" class="sidebar-overlay" style="display: none; align-items: center; justify-content: center; z-index: 2000;">
-        <div class="glass-panel" style="width: 100%; max-width: 650px; padding: 32px; position: relative;">
+    <div id="editExpenseModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000; padding-top: 20px;">
+        <div class="glass-panel animate-slide-down" style="width: 100%; max-width: 650px; padding: 32px; position: relative; border-radius: 16px;">
             <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleEditModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
                 <i class="fas fa-times"></i>
             </button>
@@ -96,13 +149,18 @@
                         <th>Category</th>
                         <th>Logged By</th>
                         <th style="text-align: right;">Amount (Tk.)</th>
+                        <th style="text-align: center;">Status</th>
                         <th style="text-align: center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $totalAmount = 0; @endphp
                     @forelse($expenses as $expense)
-                        @php $totalAmount += $expense->amount; @endphp
+                        @php 
+                            if($expense->status === 'approved') {
+                                $totalAmount += $expense->amount;
+                            }
+                        @endphp
                         <tr>
                             <td>{{ $expense->expense_date->format('Y-m-d') }}</td>
                             <td style="font-family: monospace;">
@@ -116,8 +174,31 @@
                                 </a>
                             </td>
                             <td>{{ $expense->category->name ?? 'N/A' }}</td>
-                            <td>{{ $expense->employee->name ?? 'N/A' }}</td>
-                            <td style="text-align: right; color: var(--danger); font-weight: bold;">-{{ number_format($expense->amount, 2) }}</td>
+                            <td>
+                                {{ $expense->employee->name ?? 'N/A' }}
+                                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">
+                                    @if($expense->recordedBy)
+                                        <i class="fas fa-user-edit" style="font-size: 9px;"></i> 
+                                        <strong>{{ $expense->recordedBy->role === 'admin' ? 'Admin' : 'PM' }}:</strong> {{ $expense->recordedBy->name }}
+                                    @else
+                                        <i class="fas fa-user-check" style="font-size: 9px;"></i> Auto-Assigned
+                                    @endif
+                                </div>
+                            </td>
+                            <td style="text-align: right; color: var(--danger); font-weight: bold; {{ ($expense->status !== 'approved') ? 'text-decoration: line-through; opacity: 0.6;' : '' }}">-Tk. {{ number_format($expense->amount, 2) }}</td>
+                            <td style="text-align: center;">
+                                <span class="badge" style="
+                                    @if($expense->status === 'approved')
+                                        background: rgba(40, 167, 69, 0.1); color: var(--success); border: 1px solid var(--success);
+                                    @elseif($expense->status === 'rejected')
+                                        background: rgba(220, 53, 69, 0.1); color: var(--danger); border: 1px solid var(--danger);
+                                    @else
+                                        background: rgba(255, 193, 7, 0.1); color: var(--accent-yellow); border: 1px solid var(--accent-yellow);
+                                    @endif
+                                ">
+                                    {{ ucfirst($expense->status ?? 'pending') }}
+                                </span>
+                            </td>
                             <td>
                                 <div class="dropdown" style="text-align: center;">
                                     <button class="dropdown-toggle" type="button">
@@ -142,6 +223,14 @@
                                         <a class="dropdown-item" href="{{ route('shared.expenses.invoice', $expense->id) }}" target="_blank">
                                             <i class="fas fa-file-invoice"></i> Invoice
                                         </a>
+                                        @if($expense->status === 'pending')
+                                            <a class="dropdown-item" href="javascript:void(0)" onclick="updateExpenseStatus('{{ route('admin.expenses.updateStatus', $expense->id) }}', 'approved')" style="color: var(--success);">
+                                                <i class="fas fa-check-circle"></i> Approve
+                                            </a>
+                                            <a class="dropdown-item" href="javascript:void(0)" onclick="updateExpenseStatus('{{ route('admin.expenses.updateStatus', $expense->id) }}', 'rejected')" style="color: var(--danger);">
+                                                <i class="fas fa-times-circle"></i> Reject
+                                            </a>
+                                        @endif
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="javascript:void(0)" onclick="confirmExpenseDelete('{{ route('admin.expenses.destroy', $expense->id) }}')" style="color: var(--danger);">
                                             <i class="fas fa-trash-alt"></i> Delete
@@ -152,7 +241,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 24px;">
+                            <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 24px;">
                                 No expenses found for the selected filters.
                             </td>
                         </tr>
@@ -161,9 +250,9 @@
                 @if(count($expenses) > 0)
                     <tfoot>
                         <tr>
-                            <th colspan="5" style="text-align: right; font-size: 16px;">Total:</th>
+                            <th colspan="5" style="text-align: right; font-size: 16px;">Approved Total:</th>
                             <th style="text-align: right; color: var(--danger); font-size: 16px;">Tk. {{ number_format($totalAmount, 2) }}</th>
-                            <th></th>
+                            <th colspan="2"></th>
                         </tr>
                     </tfoot>
                 @endif
@@ -180,9 +269,28 @@
         @method('DELETE')
     </form>
 
+    <form id="updateStatusForm" method="POST" action="" style="display: none;">
+        @csrf
+        @method('PATCH')
+        <input type="hidden" name="status" id="status_input">
+    </form>
+
     <script>
         function toggleEditModal() {
             const modal = document.getElementById('editExpenseModal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => modal.classList.add('active'), 10);
+            } else {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        function toggleRecordModal() {
+            const modal = document.getElementById('recordExpenseModal');
             if (modal.style.display === 'none' || modal.style.display === '') {
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -223,6 +331,27 @@
                 if (result.isConfirmed) {
                     const form = document.getElementById('deleteExpenseForm');
                     form.action = url;
+                    form.submit();
+                }
+            });
+        }
+
+        function updateExpenseStatus(url, status) {
+            Swal.fire({
+                title: 'Confirm ' + (status.charAt(0).toUpperCase() + status.slice(1)) + '?',
+                text: 'Are you sure you want to ' + status + ' this expense?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: status === 'approved' ? 'var(--success)' : 'var(--danger)',
+                cancelButtonColor: '#a0a0a0',
+                confirmButtonText: 'Yes, ' + status + ' it!',
+                background: document.documentElement.getAttribute('data-theme') === 'light' ? '#fff' : '#1e1e1e',
+                color: document.documentElement.getAttribute('data-theme') === 'light' ? '#000' : '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('updateStatusForm');
+                    form.action = url;
+                    document.getElementById('status_input').value = status;
                     form.submit();
                 }
             });

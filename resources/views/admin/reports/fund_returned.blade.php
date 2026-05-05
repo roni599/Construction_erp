@@ -168,6 +168,15 @@
             headerData.push([]); 
 
             const ws = XLSX.utils.aoa_to_sheet(headerData);
+            const colCount = 6;
+            const merges = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } }
+            ];
+            let currentRow = 2;
+            if (reportPeriod) { merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: colCount - 1 } }); currentRow++; }
+            merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow, c: colCount - 1 } });
+
             const table = document.getElementById("returns-report-table");
             const tableClone = table.cloneNode(true);
             const tfoot = tableClone.querySelector('tfoot');
@@ -175,8 +184,16 @@
             XLSX.utils.sheet_add_dom(ws, tableClone, { origin: -1 });
 
             const footerData = [['Total Returned:', '', '', '', '', "Tk. {{ number_format($total ?? 0, 2) }}"]];
+            const startFooterRow = XLSX.utils.decode_range(ws['!ref']).e.r + 1;
             XLSX.utils.sheet_add_aoa(ws, footerData, { origin: -1 });
+            merges.push({ s: { r: startFooterRow, c: 0 }, e: { r: startFooterRow, c: 4 } });
 
+            const cellRef = XLSX.utils.encode_cell({ r: startFooterRow, c: colCount - 1 });
+            if (ws[cellRef]) ws[cellRef].s = { alignment: { horizontal: "left" }, font: { bold: true } };
+            const labelRef = XLSX.utils.encode_cell({ r: startFooterRow, c: 0 });
+            if (ws[labelRef]) ws[labelRef].s = { alignment: { horizontal: "right" }, font: { bold: true } };
+
+            ws['!merges'] = merges;
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Report");
             XLSX.writeFile(wb, "Fund_Returned_Report.xlsx");
@@ -187,7 +204,9 @@
             const doc = new jsPDF('p', 'mm', 'a4');
             const downloadDate = new Date().toLocaleDateString();
             const projectTitle = "FUND RETURNED (FROM PM) REPORT";
-            
+            const projectName = "Project: {{ request('project_id') ? $projects->find(request('project_id'))->project_name : 'All Projects' }}";
+            const reportPeriod = "@if(request('from_date') || request('to_date'))Period: {{ request('from_date') ?: 'Start' }} to {{ request('to_date') ?: 'End' }}@endif";
+
             const body = [];
             document.querySelectorAll('#returns-report-table tbody tr').forEach(row => {
                 const rowData = [];
@@ -195,17 +214,34 @@
                 if (rowData.length > 0) body.push(rowData);
             });
 
+            const headerRows = [
+                [{ content: projectTitle, styles: { halign: 'center', fontSize: 14, fontStyle: 'bold', fillColor: [248, 249, 250] } }],
+                [{ content: projectName, styles: { halign: 'center', fontSize: 10, fontStyle: 'bold' } }]
+            ];
+            if (reportPeriod) headerRows.push([{ content: reportPeriod, styles: { halign: 'center', fontSize: 9 } }]);
+            headerRows.push([{ content: 'Date: ' + downloadDate, styles: { halign: 'center', fontSize: 9 } }]);
+
+            doc.autoTable({
+                body: headerRows,
+                startY: 10,
+                theme: 'grid',
+                styles: { cellPadding: 2, lineColor: [0, 0, 0], lineWidth: 0.2, textColor: [0, 0, 0] },
+                margin: { left: 14, right: 14 }
+            });
+
+            const foot = [[{ content: 'Total Returned:', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($total ?? 0, 2) }}', styles: { halign: 'right', fontStyle: 'bold' } }]];
+
             doc.autoTable({
                 head: [[{content:'Date'}, {content:'Invoice'}, {content:'Project'}, {content:'Returned By'}, {content:'Method'}, {content:'Amount', styles:{halign:'right'}}]],
                 body: body,
-                foot: [[{ content: 'Total Returned:', colSpan: 5, styles: { halign: 'right' } }, { content: 'Tk. {{ number_format($total ?? 0, 2) }}', styles: { halign: 'right', fontStyle: 'bold' } }]],
-                startY: 20,
+                foot: foot,
+                startY: doc.lastAutoTable.finalY,
                 theme: 'grid',
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [41, 128, 185] }
+                styles: { fontSize: 8, halign: 'center', lineWidth: 0.1, lineColor: [200, 200, 200] },
+                headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                columnStyles: { 5: { halign: 'right' } },
+                footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' }
             });
-
-            doc.text(projectTitle, 14, 15);
             doc.save("Fund_Returned_Report.pdf");
         }
     </script>

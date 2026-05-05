@@ -107,6 +107,9 @@
                                     <a class="dropdown-item" href="javascript:void(0)" onclick="openFundModal({{ $project->id }}, '{{ addslashes($project->project_name) }}', '{{ addslashes($project->manager->name ?? 'Unassigned') }}', {{ number_format($project->estimated_budget, 2, '.', '') }}, {{ number_format($project->managerFunds()->sum('amount'), 2, '.', '') }})">
                                         <i class="fas fa-hand-holding-usd"></i> Disburse Fund
                                     </a>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="openExpenseModal({{ $project->id }}, '{{ addslashes($project->project_name) }}')">
+                                        <i class="fas fa-receipt"></i> Record Expense
+                                    </a>
                                     @endif
                                     <form id="delete-project-{{ $project->id }}" action="{{ route('admin.projects.destroy', $project->id) }}" method="POST" style="display: none;">
                                         @csrf
@@ -227,6 +230,48 @@
         </div>
     </div>
 
+    <!-- Record Expense Modal -->
+    <div id="expenseFormModal" class="sidebar-overlay" style="display: none; align-items: flex-start; justify-content: center; z-index: 2000;">
+        <div class="glass-panel animate-slide-up-custom" style="width: 100%; max-width: 500px; padding: 32px; position: relative; margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
+            <button style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer; transition: var(--transition);" onclick="toggleExpenseModal()" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-times"></i>
+            </button>
+            <div style="margin-bottom: 24px;">
+                <h3 style="margin: 0;">Record Project Expense</h3>
+                <p id="expense-project-name" style="margin: 4px 0 0; color: var(--accent-blue); font-weight: 500;"></p>
+            </div>
+            
+            <form id="expenseForm" method="POST" action="" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="expense_category_id" class="form-control" required style="background: rgba(0,0,0,0.8);">
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (Tk.)</label>
+                    <input type="number" step="0.01" name="amount" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expense Date</label>
+                    <input type="date" name="expense_date" class="form-control" required value="{{ date('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bill Image / Receipt</label>
+                    <input type="file" name="bill_image" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top: 16px;">Save Expense</button>
+            </form>
+        </div>
+    </div>
+
     <style>
         @keyframes slideUpCustom {
             from { transform: translateY(100vh); opacity: 0; }
@@ -315,6 +360,25 @@
                 return false;
             }
             return true;
+        }
+
+        function toggleExpenseModal() {
+            const modal = document.getElementById('expenseFormModal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            } else {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        function openExpenseModal(id, name) {
+            if (typeof closeAllDropdowns === 'function') closeAllDropdowns();
+            const form = document.getElementById('expenseForm');
+            form.action = "{{ route('admin.projects.expenses.store', ':id') }}".replace(':id', id);
+            document.getElementById('expense-project-name').textContent = 'Project: ' + name;
+            toggleExpenseModal();
         }
     </script>
 @endsection

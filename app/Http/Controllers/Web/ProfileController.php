@@ -66,6 +66,6 @@ class ProfileController extends Controller
             'password' => \Illuminate\Support\Facades\Hash::make($request->password),
         ]);
 
-        return back()->with('success', 'Password changed successfully.');
+        return back()->with('success', 'Password changed successfully.');   
     }
 }

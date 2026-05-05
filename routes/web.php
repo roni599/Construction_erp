@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/{id}', [ProjectWebController::class, 'adminShow'])->name('projects.show');
         Route::get('projects/{id}/ledger', [ProjectWebController::class, 'adminLedger'])->name('projects.ledger');
         Route::get('projects/{id}/expenses', [ProjectWebController::class, 'adminExpenses'])->name('projects.expenses');
+        Route::get('projects-expenses/create', [ProjectWebController::class, 'adminCreateGlobalExpense'])->name('projects.expenses.createGlobal');
         Route::get('all-expenses', [ProjectWebController::class, 'adminAllExpenses'])->name('projects.all_expenses');
         Route::get('projects/{id}/edit', [ProjectWebController::class, 'adminEdit'])->name('projects.edit');
         Route::put('projects/{id}', [ProjectWebController::class, 'adminUpdate'])->name('projects.update');
@@ -68,9 +69,12 @@ Route::middleware('auth')->group(function () {
         Route::put('projects-payments/{id}', [ProjectWebController::class, 'updatePayment'])->name('projects.payments.update');
         Route::get('projects-payments/{id}/invoice', [ProjectWebController::class, 'invoicePayment'])->name('projects.payments.invoice');
         Route::get('all-returns', [ProjectWebController::class, 'adminAllReturns'])->name('projects.all_returns');
+        Route::post('projects-expenses', [ProjectWebController::class, 'storeGlobalExpense'])->name('projects.expenses.storeGlobal');
+        Route::post('projects/{id}/expenses/store', [ProjectWebController::class, 'adminStoreExpense'])->name('projects.expenses.store');
         Route::get('expenses/{id}/edit', [ProjectWebController::class, 'editExpense'])->name('expenses.edit');
         Route::put('expenses/{id}', [ProjectWebController::class, 'updateExpense'])->name('expenses.update');
         Route::delete('expenses/{id}', [ProjectWebController::class, 'destroyExpense'])->name('expenses.destroy');
+        Route::patch('expenses/{id}/status', [ProjectWebController::class, 'adminUpdateExpenseStatus'])->name('expenses.updateStatus');
         
         Route::get('projects-funds', [ProjectWebController::class, 'createGlobalFund'])->name('projects.funds.create');
         Route::post('projects-funds', [ProjectWebController::class, 'storeGlobalFund'])->name('projects.funds.storeGlobal');
@@ -95,6 +99,12 @@ Route::middleware('auth')->group(function () {
         Route::get('profile', [\App\Http\Controllers\Web\ProfileController::class, 'index'])->name('profile.index');
         Route::post('profile', [\App\Http\Controllers\Web\ProfileController::class, 'update'])->name('profile.update');
         Route::post('profile/password', [\App\Http\Controllers\Web\ProfileController::class, 'updatePassword'])->name('profile.password');
+        
+        // Expense Categories
+        Route::get('categories', [ExpenseCategoryWebController::class, 'index'])->name('categories.index');
+        Route::post('categories', [ExpenseCategoryWebController::class, 'store'])->name('categories.store');
+        Route::put('categories/{id}', [ExpenseCategoryWebController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{id}', [ExpenseCategoryWebController::class, 'destroy'])->name('categories.destroy');
     });
 
     // --- Manager Routes ---
@@ -105,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::get('projects', [ProjectWebController::class, 'managerIndex'])->name('projects.index');
         Route::get('projects/{id}', [ProjectWebController::class, 'managerShow'])->name('projects.show');
         Route::get('projects/{id}/ledger', [ProjectWebController::class, 'managerLedger'])->name('projects.ledger');
+        Route::get('projects/{id}/ledger/print', [ProjectWebController::class, 'managerPrintLedger'])->name('projects.ledger.print');
         Route::post('projects/{id}/expenses', [ProjectWebController::class, 'managerStoreExpense'])->name('projects.expenses.store');
         Route::post('projects/{id}/returns', [ProjectWebController::class, 'managerStoreReturn'])->name('projects.returns.store');
 

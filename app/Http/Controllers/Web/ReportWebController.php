@@ -67,7 +67,7 @@ class ReportWebController extends Controller
     public function projectExpense(Request $request)
     {
         $projects = Project::all();
-        $query = Expense::with(['project', 'category']);
+        $query = Expense::with(['project', 'category', 'recordedBy']);
 
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->from_date) $query->where('expense_date', '>=', $request->from_date);
@@ -79,9 +79,10 @@ class ReportWebController extends Controller
             });
         }
 
+        $totalExpense = (clone $query)->where('status', 'approved')->sum('amount');
         $perPage = $request->get('per_page', 10);
         $report_data = ($perPage === 'all') ? $query->orderBy('expense_date', 'desc')->get() : $query->orderBy('expense_date', 'desc')->paginate($perPage);
-        return view('admin.reports.project_expense', compact('projects', 'report_data'));
+        return view('admin.reports.project_expense', compact('projects', 'report_data', 'totalExpense'));
     }
 
     public function fundReturned(Request $request)
@@ -199,7 +200,9 @@ class ReportWebController extends Controller
                     'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
                     'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
-                    'debit' => $item->amount,
+                    'debit' => $item->status === 'approved' ? $item->amount : 0,
+                    'amount' => $item->amount,
+                    'status' => $item->status,
                     'raw_date' => $item->expense_date->format('Y-m-d')
                 ];
             });
@@ -310,7 +313,7 @@ class ReportWebController extends Controller
         $transactions = collect();
 
         if ($type === 'all' || $type === 'client_received') {
-            $query = ClientPayment::with('project');
+            $query = ClientPayment::with(['project', 'recordedBy']);
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('payment_date', '>=', $from);
             if ($to) $query->where('payment_date', '<=', $to);
@@ -333,13 +336,14 @@ class ReportWebController extends Controller
                     'debit' => 0,
                     'project_id' => $item->project_id,
                     'project_name' => $item->project->project_name ?? 'N/A',
+                    'recorded_by' => $item->recordedBy->name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($payments);
         }
 
         if ($type === 'all' || $type === 'fund_pm') {
-            $query = ManagerFund::with('project');
+            $query = ManagerFund::with(['project', 'givenBy']);
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('fund_date', '>=', $from);
             if ($to) $query->where('fund_date', '<=', $to);
@@ -362,13 +366,14 @@ class ReportWebController extends Controller
                     'debit' => $item->amount,
                     'project_id' => $item->project_id,
                     'project_name' => $item->project->project_name ?? 'N/A',
+                    'recorded_by' => $item->givenBy->name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($funds);
         }
 
         if ($type === 'all' || $type === 'expense') {
-            $query = Expense::with(['category', 'project']);
+            $query = Expense::with(['category', 'project', 'recordedBy']);
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('expense_date', '>=', $from);
             if ($to) $query->where('expense_date', '<=', $to);
@@ -388,16 +393,19 @@ class ReportWebController extends Controller
                     'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
                     'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
-                    'debit' => $item->amount,
+                    'debit' => $item->status === 'approved' ? $item->amount : 0,
+                    'amount' => $item->amount,
+                    'status' => $item->status,
                     'project_id' => $item->project_id,
                     'project_name' => $item->project->project_name ?? 'N/A',
+                    'recorded_by' => $item->recordedBy->name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($expenses);
         }
 
         if ($type === 'all' || $type === 'fund_return') {
-            $query = \App\Models\ManagerReturn::with('project');
+            $query = \App\Models\ManagerReturn::with(['project', 'receivedBy']);
             if ($projectId) $query->where('project_id', $projectId);
             if ($from) $query->where('return_date', '>=', $from);
             if ($to) $query->where('return_date', '<=', $to);
@@ -420,6 +428,7 @@ class ReportWebController extends Controller
                     'debit' => 0,
                     'project_id' => $item->project_id,
                     'project_name' => $item->project->project_name ?? 'N/A',
+                    'recorded_by' => $item->receivedBy->name ?? 'N/A',
                 ];
             });
             $transactions = $transactions->concat($returns);
@@ -491,7 +500,9 @@ class ReportWebController extends Controller
                     'invoice_no' => $item->invoice_no ?? 'EXP-'.$item->id,
                     'invoice_url' => route('shared.expenses.invoice', $item->id),
                     'credit' => 0,
-                    'debit' => $item->amount,
+                    'debit' => $item->status === 'approved' ? $item->amount : 0,
+                    'amount' => $item->amount,
+                    'status' => $item->status,
                 ];
             });
             $transactions = $transactions->concat($expenses);

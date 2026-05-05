@@ -10,15 +10,29 @@ class ExpenseCategoryWebController extends Controller
 {
     public function index(Request $request)
     {
-        $employeeId = auth()->user()->employee_id;
         $perPage = $request->get('per_page', 10);
+        $search = $request->get('search');
         
-        $query = ExpenseCategory::withCount(['expenses' => function($query) use ($employeeId) {
-            $query->where('employee_id', $employeeId);
-        }]);
+        $query = ExpenseCategory::query();
 
-        $categories = ($perPage === 'all') ? $query->orderBy('created_at', 'desc')->get() : $query->orderBy('created_at', 'desc')->paginate($perPage);
-        return view('manager.categories.index', compact('categories'));
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if (auth()->user()->role === 'project_manager') {
+            $employeeId = auth()->user()->employee_id;
+            $query->withCount(['expenses' => function($q) use ($employeeId) {
+                $q->where('employee_id', $employeeId);
+            }]);
+        } else {
+            $query->withCount('expenses');
+        }
+
+        $categories = ($perPage === 'all') 
+            ? $query->orderBy('created_at', 'desc')->get() 
+            : $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return view('shared.categories.index', compact('categories'));
     }
 
     public function store(Request $request)
